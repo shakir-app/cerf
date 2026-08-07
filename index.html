@@ -151,113 +151,184 @@
     </section>
 
     <!-- 2. ADMIN DASHBOARD SECTION -->
-    <section id="admin-section" class="hidden space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950/90 text-white p-5 rounded-3xl shadow-xl border border-indigo-500/20 gap-4 relative overflow-hidden backdrop-blur-xl">
-        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
-        <div class="relative z-10">
-          <h2 class="text-xl font-bold text-white flex items-center gap-2.5 font-prompt">
-            <span class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
-              <i class="fa-solid fa-shield-halved text-sm"></i>
-            </span>
-            แผงควบคุมผู้ดูแลระบบ (Admin Dashboard)
-          </h2>
-          <p class="text-xs text-slate-400 mt-1">จัดการโลโก้ ลายเซ็น บัญชีผู้ใช้งานครู และการตั้งค่า API Developer</p>
+    <section id="admin-section" class="hidden space-y-6 transition-all duration-300">
+      <!-- Top Admin Header Bar -->
+      <div class="flex flex-col md:flex-row md:items-center justify-between bg-slate-950/90 text-white p-6 rounded-3xl shadow-2xl border border-slate-800/90 gap-4 backdrop-blur-xl relative overflow-hidden">
+        <div class="absolute -right-12 -top-12 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="flex items-center gap-4 relative z-10">
+          <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-amber-500 via-amber-400 to-indigo-600 p-[1.5px] shadow-lg shadow-amber-500/10">
+            <div class="w-full h-full bg-slate-950 rounded-[14px] flex items-center justify-center text-amber-400">
+              <i class="fa-solid fa-user-shield text-xl"></i>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-xl md:text-2xl font-bold text-white font-prompt flex items-center gap-2">
+              แผงควบคุมผู้ดูแลระบบ
+              <span class="text-xs bg-indigo-500/20 text-indigo-300 px-2.5 py-0.5 rounded-full border border-indigo-500/30 font-mono font-normal">v2.0 Dark</span>
+            </h2>
+            <p class="text-xs text-slate-400 mt-0.5">จัดการระบบ สิทธิผู้สอน สื่อเกียรติบัตร และการเชื่อมต่อ API</p>
+          </div>
         </div>
 
-        <!-- Hidden Developer & API Tools Accessible Only to Admin -->
         <div class="flex flex-wrap items-center gap-2 relative z-10">
-          <button onclick="openApiConfigModal()" class="bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 border border-indigo-700/60 hover:border-indigo-500 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm hover:shadow-indigo-500/20 active:scale-95" title="ตั้งค่าการเชื่อมต่อ Google Apps Script">
+          <button onclick="openApiConfigModal()" class="bg-slate-900/90 hover:bg-slate-800 text-indigo-300 border border-indigo-500/30 hover:border-indigo-500 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm active:scale-95">
             <i class="fa-solid fa-plug text-amber-400"></i>
             <span>ตั้งค่า API URL</span>
           </button>
-
-          <button onclick="openGasCodeModal()" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-700 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm active:scale-95" title="ดูซอร์สโค้ด Code.gs">
+          <button onclick="openGasCodeModal()" class="bg-slate-900/90 hover:bg-slate-800 text-emerald-300 border border-emerald-500/30 hover:border-emerald-500 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm active:scale-95">
             <i class="fa-solid fa-code text-emerald-400"></i>
-            <span>ซอร์สโค้ด Code.gs</span>
+            <span>โค้ด Code.gs</span>
           </button>
-
-          <button onclick="loadAdminData()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 active:scale-95">
+          <button onclick="loadAdminData()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-lg shadow-indigo-600/30 active:scale-95">
             <i class="fa-solid fa-rotate text-xs"></i>
-            <span>รีเฟรช</span>
+            <span>รีเฟรชข้อมูล</span>
           </button>
         </div>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- LOGO MANAGEMENT -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between text-slate-800">
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-image text-indigo-500"></i> จัดการโลโก้หน่วยงาน (สูงสุด 5 รายการ)
-              </h3>
-            </div>
-            
-            <form id="logo-form" onsubmit="handleSaveLogo(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60 mb-4">
-              <input type="text" id="logo-name" placeholder="ชื่อเรียกโลโก้ (เช่น โลโก้กระทรวง)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <input type="url" id="logo-url" placeholder="URL รูปโลโก้ (ไฟล์ PNG พื้นหลังโปร่งใส)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <input type="text" id="logo-org" placeholder="ชื่อหน่วยงาน / โรงเรียน" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-xs font-medium transition">
-                <i class="fa-solid fa-plus-circle mr-1"></i> บันทึกโลโก้
-              </button>
-            </form>
+      <!-- Quick Summary Stat Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="bg-slate-950/70 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-chalkboard-user"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการโลโก้ในระบบ</span>
-            <div id="logo-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div>
+            <span class="text-[11px] text-slate-400 block">ครูในระบบ</span>
+            <span id="stat-teachers-count" class="text-lg font-bold text-white font-prompt">0</span>
           </div>
         </div>
 
-        <!-- SIGNATURE MANAGEMENT -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
-          <div>
-            <div class="flex justify-between items-center mb-4">
-              <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
-                <i class="fa-solid fa-signature text-indigo-500"></i> จัดการลายเซ็นดิจิทัล
-              </h3>
-            </div>
-            
-            <form id="sig-form" onsubmit="handleSaveSig(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60 mb-4">
-              <input type="text" id="sig-name" placeholder="ชื่อ-นามสกุล เจ้าของลายเซ็น" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <input type="url" id="sig-url" placeholder="URL รูปลายเซ็น (ไฟล์ PNG โปร่งใส)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <input type="text" id="sig-pos" placeholder="ตำแหน่ง (เช่น ผู้อำนวยการโรงเรียน...)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
-              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-xs font-medium transition">
-                <i class="fa-solid fa-plus-circle mr-1"></i> บันทึกลายเซ็น
-              </button>
-            </form>
+        <div class="bg-slate-950/70 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-image"></i>
           </div>
           <div>
-            <span class="text-xs font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการลายเซ็นในระบบ</span>
-            <div id="sig-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div>
+            <span class="text-[11px] text-slate-400 block">โลโก้หน่วยงาน</span>
+            <span id="stat-logos-count" class="text-lg font-bold text-white font-prompt">0 / 5</span>
           </div>
         </div>
 
-        <!-- TEACHER USER MANAGEMENT -->
-        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 lg:col-span-2">
-          <h3 class="font-bold text-base text-slate-800 mb-4 flex items-center gap-2">
-            <i class="fa-solid fa-chalkboard-user text-indigo-500"></i> จัดการผู้ใช้งานผู้สอน / ครู (Teacher Accounts)
-          </h3>
-          <form id="teacher-form" onsubmit="handleSaveTeacher(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
-            <input type="text" id="tch-user" placeholder="Username" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
-            <input type="password" id="tch-pass" placeholder="Password" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
-            <input type="text" id="tch-name" placeholder="ชื่อ-นามสกุล ครู" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
-            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1">
-              <i class="fa-solid fa-user-plus"></i> เพิ่ม/แก้ไขบัญชี
+        <div class="bg-slate-950/70 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-signature"></i>
+          </div>
+          <div>
+            <span class="text-[11px] text-slate-400 block">ลายเซ็นดิจิทัล</span>
+            <span id="stat-sigs-count" class="text-lg font-bold text-white font-prompt">0</span>
+          </div>
+        </div>
+
+        <div class="bg-slate-950/70 border border-slate-800/80 p-4 rounded-2xl backdrop-blur-md flex items-center gap-3">
+          <div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 flex items-center justify-center text-lg">
+            <i class="fa-solid fa-network-wired"></i>
+          </div>
+          <div>
+            <span class="text-[11px] text-slate-400 block">สถานะ API</span>
+            <span id="stat-api-status" class="text-xs font-bold text-emerald-400 font-prompt flex items-center gap-1.5">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span> เชื่อมต่อแล้ว
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <div class="flex border-b border-slate-800 gap-2 overflow-x-auto pb-1">
+        <button onclick="switchAdminTab('teachers')" id="tab-btn-teachers" class="admin-tab-btn px-5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-indigo-600 text-white shadow-lg shadow-indigo-600/20">
+          <i class="fa-solid fa-users"></i>
+          <span>จัดการผู้ใช้งานครู</span>
+        </button>
+        <button onclick="switchAdminTab('assets')" id="tab-btn-assets" class="admin-tab-btn px-5 py-2.5 rounded-xl text-xs font-semibold transition flex items-center gap-2 bg-slate-900 text-slate-400 hover:text-slate-200 border border-slate-800">
+          <i class="fa-solid fa-icons"></i>
+          <span>โลโก้ & ลายเซ็น</span>
+        </button>
+      </div>
+
+      <!-- TAB 1: TEACHER USER MANAGEMENT -->
+      <div id="admin-tab-teachers" class="space-y-6">
+        <div class="bg-slate-900/80 border border-slate-800 rounded-3xl p-6 shadow-2xl backdrop-blur-md">
+          <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 border-b border-slate-800/80 pb-4">
+            <div>
+              <h3 class="font-bold text-lg text-white font-prompt flex items-center gap-2">
+                <i class="fa-solid fa-chalkboard-user text-indigo-400"></i> บัญชีผู้ใช้งานผู้สอน / ครู (Teacher Accounts)
+              </h3>
+              <p class="text-xs text-slate-400 mt-1">เพิ่มหรือแก้ไขบัญชีผู้ใช้สำหรับครูเพื่อเข้าใช้งานและสร้างเกียรติบัตร</p>
+            </div>
+          </div>
+
+          <form id="teacher-form" onsubmit="handleSaveTeacher(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 bg-slate-950/80 p-4 rounded-2xl border border-slate-800">
+            <input type="text" id="tch-user" placeholder="Username" class="p-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-500" required>
+            <input type="password" id="tch-pass" placeholder="Password" class="p-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-500" required>
+            <input type="text" id="tch-name" placeholder="ชื่อ-นามสกุล ครู" class="p-3 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 focus:outline-none placeholder-slate-500" required>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white py-3 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-600/20 active:scale-95">
+              <i class="fa-solid fa-user-plus"></i> เพิ่ม/บันทึกบัญชี
             </button>
           </form>
 
-          <div class="overflow-x-auto rounded-xl border border-slate-200">
+          <div class="overflow-x-auto rounded-2xl border border-slate-800 bg-slate-950/40">
             <table class="w-full text-left text-xs">
-              <thead class="bg-slate-100 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+              <thead class="bg-slate-950 text-slate-400 font-semibold uppercase tracking-wider border-b border-slate-800">
                 <tr>
-                  <th class="p-3">Username</th>
-                  <th class="p-3">ชื่อ-นามสกุล</th>
-                  <th class="p-3">สถานะ</th>
-                  <th class="p-3 text-center">จัดการ</th>
+                  <th class="p-3.5">Username</th>
+                  <th class="p-3.5">ชื่อ-นามสกุล</th>
+                  <th class="p-3.5">สถานะ</th>
+                  <th class="p-3.5 text-center">จัดการ</th>
                 </tr>
               </thead>
-              <tbody id="teacher-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+              <tbody id="teacher-table-body" class="divide-y divide-slate-800/60 text-slate-300"></tbody>
             </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: LOGOS & SIGNATURES MANAGEMENT -->
+      <div id="admin-tab-assets" class="hidden space-y-6">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- LOGO MANAGEMENT -->
+          <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white font-prompt flex items-center gap-2">
+                  <i class="fa-solid fa-image text-amber-400"></i> จัดการโลโก้หน่วยงาน (สูงสุด 5 รายการ)
+                </h3>
+              </div>
+              
+              <form id="logo-form" onsubmit="handleSaveLogo(event)" class="space-y-3 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5">
+                <input type="text" id="logo-name" placeholder="ชื่อเรียกโลโก้ (เช่น โลโก้กระทรวง)" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <input type="url" id="logo-url" placeholder="URL รูปโลโก้ (ไฟล์ PNG พื้นหลังโปร่งใส)" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <input type="text" id="logo-org" placeholder="ชื่อหน่วยงาน / โรงเรียน" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-md">
+                  <i class="fa-solid fa-plus-circle"></i> บันทึกโลโก้
+                </button>
+              </form>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการโลโก้ในระบบ</span>
+              <div id="logo-list" class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1"></div>
+            </div>
+          </div>
+
+          <!-- SIGNATURE MANAGEMENT -->
+          <div class="bg-slate-900/80 border border-slate-800 p-6 rounded-3xl shadow-2xl backdrop-blur-md flex flex-col justify-between">
+            <div>
+              <div class="flex justify-between items-center mb-4 border-b border-slate-800 pb-3">
+                <h3 class="font-bold text-base text-white font-prompt flex items-center gap-2">
+                  <i class="fa-solid fa-signature text-emerald-400"></i> จัดการลายเซ็นดิจิทัล
+                </h3>
+              </div>
+              
+              <form id="sig-form" onsubmit="handleSaveSig(event)" class="space-y-3 bg-slate-950/80 p-4 rounded-2xl border border-slate-800 mb-5">
+                <input type="text" id="sig-name" placeholder="ชื่อ-นามสกุล เจ้าของลายเซ็น" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <input type="url" id="sig-url" placeholder="URL รูปลายเซ็น (ไฟล์ PNG โปร่งใส)" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <input type="text" id="sig-pos" placeholder="ตำแหน่ง (เช่น ผู้อำนวยการโรงเรียน...)" class="w-full p-2.5 bg-slate-900 border border-slate-800 text-white rounded-xl text-xs focus:ring-2 focus:ring-indigo-500 placeholder-slate-500" required>
+                <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition flex items-center justify-center gap-1.5 shadow-md">
+                  <i class="fa-solid fa-plus-circle"></i> บันทึกลายเซ็น
+                </button>
+              </form>
+            </div>
+            <div>
+              <span class="text-[11px] font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการลายเซ็นในระบบ</span>
+              <div id="sig-list" class="space-y-2 max-h-56 overflow-y-auto custom-scrollbar pr-1"></div>
+            </div>
           </div>
         </div>
       </div>
@@ -732,6 +803,25 @@
       location.reload();
     }
 
+    function switchAdminTab(tabName) {
+      document.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        btn.classList.remove('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+        btn.classList.add('bg-slate-900', 'text-slate-400', 'border', 'border-slate-800');
+      });
+      document.getElementById('admin-tab-teachers').classList.add('hidden');
+      document.getElementById('admin-tab-assets').classList.add('hidden');
+
+      if (tabName === 'teachers') {
+        document.getElementById('admin-tab-teachers').classList.remove('hidden');
+        document.getElementById('tab-btn-teachers').classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+        document.getElementById('tab-btn-teachers').classList.remove('bg-slate-900', 'text-slate-400', 'border', 'border-slate-800');
+      } else if (tabName === 'assets') {
+        document.getElementById('admin-tab-assets').classList.remove('hidden');
+        document.getElementById('tab-btn-assets').classList.add('bg-indigo-600', 'text-white', 'shadow-lg', 'shadow-indigo-600/20');
+        document.getElementById('tab-btn-assets').classList.remove('bg-slate-900', 'text-slate-400', 'border', 'border-slate-800');
+      }
+    }
+
     async function loadAdminData() {
       Swal.fire({ title: 'กำลังโหลดข้อมูล Admin...', didOpen: () => Swal.showLoading() });
       const data = await callGAS('getAdminMasterData');
@@ -739,39 +829,44 @@
 
       if(!data || !data.logos) return;
 
-      document.getElementById('logo-list').innerHTML = data.logos.length === 0 ? '<p class="text-xs text-slate-400">ยังไม่มีโลโก้</p>' : data.logos.map(l => `
-        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-          <div class="flex items-center gap-2">
-            <img src="${l.Url}" class="w-7 h-7 object-contain bg-white rounded border p-0.5" alt="Logo">
+      // Update Quick Stats
+      document.getElementById('stat-teachers-count').innerText = data.teachers ? data.teachers.length : 0;
+      document.getElementById('stat-logos-count').innerText = `${data.logos ? data.logos.length : 0} / 5`;
+      document.getElementById('stat-sigs-count').innerText = data.signatures ? data.signatures.length : 0;
+
+      document.getElementById('logo-list').innerHTML = data.logos.length === 0 ? '<p class="text-xs text-slate-500 py-3 text-center">ยังไม่มีโลโก้ในระบบ</p>' : data.logos.map(l => `
+        <div class="flex justify-between items-center p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 text-xs">
+          <div class="flex items-center gap-3">
+            <img src="${l.Url}" class="w-8 h-8 object-contain bg-slate-900 rounded-lg border border-slate-800 p-0.5" alt="Logo" onerror="this.src='https://placehold.co/40x40/1e293b/a5b4fc?text=Logo'">
             <div>
-              <div class="font-bold text-slate-800">${l.Name}</div>
+              <div class="font-bold text-white font-prompt">${l.Name}</div>
               <div class="text-[10px] text-slate-400">${l.OrgName}</div>
             </div>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${l.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${l.Status}</span>
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${l.Status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">${l.Status}</span>
         </div>
       `).join('');
 
-      document.getElementById('sig-list').innerHTML = data.signatures.length === 0 ? '<p class="text-xs text-slate-400">ยังไม่มีลายเซ็น</p>' : data.signatures.map(s => `
-        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
-          <div class="flex items-center gap-2">
-            <img src="${s.Url}" class="w-9 h-6 object-contain bg-white rounded border p-0.5" alt="Sig">
+      document.getElementById('sig-list').innerHTML = data.signatures.length === 0 ? '<p class="text-xs text-slate-500 py-3 text-center">ยังไม่มีลายเซ็นในระบบ</p>' : data.signatures.map(s => `
+        <div class="flex justify-between items-center p-2.5 bg-slate-950/80 rounded-xl border border-slate-800 text-xs">
+          <div class="flex items-center gap-3">
+            <img src="${s.Url}" class="w-10 h-7 object-contain bg-slate-900 rounded-lg border border-slate-800 p-0.5" alt="Sig" onerror="this.src='https://placehold.co/40x40/1e293b/a5b4fc?text=Sig'">
             <div>
-              <div class="font-bold text-slate-800">${s.Name}</div>
+              <div class="font-bold text-white font-prompt">${s.Name}</div>
               <div class="text-[10px] text-slate-400">${s.Position}</div>
             </div>
           </div>
-          <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${s.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${s.Status}</span>
+          <span class="text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${s.Status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">${s.Status}</span>
         </div>
       `).join('');
 
-      document.getElementById('teacher-table-body').innerHTML = data.teachers.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-slate-400">ยังไม่มีข้อมูลครู</td></tr>' : data.teachers.map(t => `
-        <tr class="hover:bg-slate-50 transition">
-          <td class="p-3 font-mono text-slate-700">${t.Username}</td>
-          <td class="p-3 font-medium text-slate-800">${t.Name}</td>
-          <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${t.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.Status}</span></td>
-          <td class="p-3 text-center">
-            <button onclick="deleteTeacher('${t.ID}')" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
+      document.getElementById('teacher-table-body').innerHTML = data.teachers.length === 0 ? '<tr><td colspan="4" class="p-6 text-center text-slate-500">ยังไม่มีข้อมูลครูในระบบ</td></tr>' : data.teachers.map(t => `
+        <tr class="hover:bg-slate-900/60 transition border-b border-slate-800/40">
+          <td class="p-3.5 font-mono text-indigo-300 font-semibold">${t.Username}</td>
+          <td class="p-3.5 font-medium text-white">${t.Name}</td>
+          <td class="p-3.5"><span class="text-[10px] px-2.5 py-0.5 rounded-full font-semibold ${t.Status === 'Active' ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">${t.Status}</span></td>
+          <td class="p-3.5 text-center">
+            <button onclick="deleteTeacher('${t.ID}')" class="text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 p-2 rounded-lg transition" title="ลบบัญชีครู"><i class="fa-solid fa-trash"></i></button>
           </td>
         </tr>
       `).join('');
