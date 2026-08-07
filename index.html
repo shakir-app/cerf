@@ -613,7 +613,7 @@
 
   <script>
     // APP STATE & CONFIG
-    let GAS_URL = localStorage.getItem('cert_gas_url') || "";
+    let GAS_URL = localStorage.getItem('cert_gas_url') || "https://script.google.com/macros/s/AKfycbwApdqv_PGVNcPvQSrSQWF3gJxfjHCY4MolWf1efbAWthmWBGfn-bcnCF4cAoSM8onN/exec";
     let currentUser = null;
     let fabricCanvas = null;
     let currentActivityId = null;
@@ -630,7 +630,7 @@
     function checkApiConfigStatus() {
       const banner = document.getElementById('api-warning-banner');
       if (!banner) return;
-      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('YOUR_DEPLOYMENT_ID');
+      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('https://script.google.com/macros/s/AKfycbwApdqv_PGVNcPvQSrSQWF3gJxfjHCY4MolWf1efbAWthmWBGfn-bcnCF4cAoSM8onN/exec');
       
       if (isUnconfigured && currentUser && currentUser.role === 'ADMIN') {
         banner.classList.remove('hidden');
