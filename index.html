@@ -1737,9 +1737,9 @@ function importStudents(actId, studentList) {
     const certNo = 'CERT-' + timestamp + '-' + String(idx + 1).padStart(3, '0');
     let medal = 'เข้าร่วม';
     const score = Number(st.Score) || 0;
-    if (score >= 80) medal = 'เหรียญทอง';
-    else if (score >= 70) medal = 'เหรียญเงิน';
-    else if (score >= 60) medal = 'เหรียญทองแดง';
+    if (score >= 80) medal = 'รับรางวัล เหรียญทอง';
+    else if (score >= 70) medal = 'รับรางวัล เหรียญเงิน';
+    else if (score >= 60) medal = 'รับรางวัล เหรียญทองแดง';
 
     sheet.appendRow([
       'STU_' + Date.now() + '_' + idx,
