@@ -50,7 +50,7 @@
   <style>
     body { font-family: 'Sarabun', sans-serif; }
     .canvas-wrapper {
-      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4), 0 8px 10px -6px rgba(0, 0, 0, 0.2);
       border-radius: 16px;
       overflow: hidden;
       background: #ffffff;
@@ -524,7 +524,7 @@
           <ol class="list-decimal list-inside space-y-0.5 text-indigo-300">
             <li>วางโค้ดในเมนู "โค้ด Code.gs" ลงในโปรเจกต์ Google Apps Script</li>
             <li>กดรันฟังก์ชัน <code class="bg-indigo-900 px-1 rounded font-mono">initDatabase()</code> เพื่อสร้าง Sheet สำหรับจัดเก็บข้อมูล</li>
-            <li>กด Deploy &gt; New Deployment &gt; Web App</li>
+            <li>กด Deploy > New Deployment > Web App</li>
             <li>คัดลอก URL นำมาวางในช่องด้านบนแล้วกด "บันทึกการเชื่อมต่อ"</li>
           </ol>
         </div>
@@ -555,11 +555,260 @@
       </div>
 
       <div class="flex-grow overflow-y-auto mb-4 bg-slate-950 text-emerald-300 p-4 rounded-2xl text-xs font-mono custom-scrollbar border border-slate-800">
-        <pre id="gas-code-text">// ดูโค้ดได้ในส่วน Backend ของ Google Apps Script</pre>
+        <pre id="gas-code-text">function doPost(e) {
+  try {
+    var data = JSON.parse(e.postData.contents);
+    var action = data.action;
+    var payload = data.payload || {};
+    var result = {};
+
+    switch(action) {
+      case 'login':
+        result = handleLogin(payload);
+        break;
+      case 'getAdminMasterData':
+        result = getAdminMasterData();
+        break;
+      case 'saveTeacher':
+        result = saveTeacher(payload);
+        break;
+      case 'deleteTeacher':
+        result = deleteTeacher(payload);
+        break;
+      case 'saveLogo':
+        result = saveLogo(payload);
+        break;
+      case 'saveSignature':
+        result = saveSignature(payload);
+        break;
+      case 'getActivities':
+        result = getActivities(payload);
+        break;
+      case 'saveActivity':
+        result = saveActivity(payload);
+        break;
+      case 'deleteActivity':
+        result = deleteActivity(payload);
+        break;
+      case 'getActivityDetail':
+        result = getActivityDetail(payload);
+        break;
+      case 'saveCanvasConfig':
+        result = saveCanvasConfig(payload);
+        break;
+      case 'importStudents':
+        result = importStudents(payload);
+        break;
+      case 'searchCertificates':
+        result = searchCertificates(payload);
+        break;
+      case 'verifyCertificate':
+        result = verifyCertificate(payload);
+        break;
+      default:
+        result = { status: 'error', message: 'Unknown action' };
+    }
+    return ContentService.createTextOutput(JSON.stringify(result)).setMimeType(ContentService.MimeType.JSON);
+  } catch(err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() })).setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+function initDatabase() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheets = ['Users', 'Logos', 'Signatures', 'Activities', 'Students'];
+  sheets.forEach(function(s) {
+    if(!ss.getSheetByName(s)) {
+      var sheet = ss.insertSheet(s);
+      if(s==='Users') sheet.appendRow(['ID', 'Username', 'Password', 'Name', 'Role', 'Status']);
+      if(s==='Logos') sheet.appendRow(['ID', 'Name', 'Url', 'OrgName', 'Status']);
+      if(s==='Signatures') sheet.appendRow(['ID', 'Name', 'Url', 'Position', 'Status']);
+      if(s==='Activities') sheet.appendRow(['ID', 'TeacherID', 'Title', 'ConfigJSON', 'CreatedAt']);
+      if(s==='Students') sheet.appendRow(['ID', 'ActivityID', 'CertNo', 'Name', 'Score', 'Medal', 'Rank']);
+    }
+  });
+  // Add Default Admin if empty
+  var uSheet = ss.getSheetByName('Users');
+  if(uSheet.getLastRow() <= 1) {
+    uSheet.appendRow(['ADM001', 'admin', 'admin123', 'ผู้ดูแลระบบ', 'ADMIN', 'Active']);
+  }
+}
+
+function handleLogin(p) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName('Users');
+  var data = sheet.getDataRange().getValues();
+  for(var i=1; i<data.length; i++) {
+    if(data[i][1] === p.username && data[i][2] === p.password) {
+      return {
+        status: 'success',
+        role: data[i][4],
+        user: { ID: data[i][0], Username: data[i][1], Name: data[i][3] }
+      };
+    }
+  }
+  return { status: 'error', message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
+}
+
+function getAdminMasterData() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  return {
+    teachers: getSheetObjects(ss.getSheetByName('Users')).filter(function(u){ return u.Role === 'TEACHER'; }),
+    logos: getSheetObjects(ss.getSheetByName('Logos')),
+    signatures: getSheetObjects(ss.getSheetByName('Signatures'))
+  };
+}
+
+function saveTeacher(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Users');
+  var newId = 'TCH' + new Date().getTime();
+  sheet.appendRow([newId, p.Username, p.Password, p.Name, 'TEACHER', p.Status || 'Active']);
+  return { status: 'success', message: 'บันทึกข้อมูลครูเรียบร้อยแล้ว' };
+}
+
+function deleteTeacher(p) {
+  deleteRowById('Users', p.id);
+  return { status: 'success', message: 'ลบบัญชีผู้ใช้เรียบร้อยแล้ว' };
+}
+
+function saveLogo(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Logos');
+  if(sheet.getLastRow() >= 6) return { status: 'error', message: 'เพิ่มโลโก้ได้สูงสุด 5 รายการเท่านั้น' };
+  sheet.appendRow(['LGO'+new Date().getTime(), p.Name, p.Url, p.OrgName, 'Active']);
+  return { status: 'success', message: 'บันทึกโลโก้เรียบร้อยแล้ว' };
+}
+
+function saveSignature(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Signatures');
+  sheet.appendRow(['SIG'+new Date().getTime(), p.Name, p.Url, p.Position, 'Active']);
+  return { status: 'success', message: 'บันทึกลายเซ็นเรียบร้อยแล้ว' };
+}
+
+function getActivities(p) {
+  var list = getSheetObjects(SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Activities'));
+  return list.filter(function(a){ return a.TeacherID === p.teacherId; });
+}
+
+function saveActivity(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Activities');
+  var id = 'ACT' + new Date().getTime();
+  sheet.appendRow([id, p.teacherId, p.title, '{}', new Date().toISOString()]);
+  return { status: 'success', message: 'สร้างกิจกรรมเรียบร้อยแล้ว' };
+}
+
+function deleteActivity(p) {
+  deleteRowById('Activities', p.actId);
+  deleteRowsByValue('Students', 1, p.actId); // Delete related students
+  return { status: 'success', message: 'ลบกิจกรรมเรียบร้อยแล้ว' };
+}
+
+function getActivityDetail(p) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var activities = getSheetObjects(ss.getSheetByName('Activities'));
+  var act = activities.find(function(a){ return a.ID === p.actId; });
+  return {
+    activity: act,
+    activeLogos: getSheetObjects(ss.getSheetByName('Logos')).filter(function(l){ return l.Status === 'Active'; }),
+    activeSignatures: getSheetObjects(ss.getSheetByName('Signatures')).filter(function(s){ return s.Status === 'Active'; })
+  };
+}
+
+function saveCanvasConfig(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Activities');
+  var data = sheet.getDataRange().getValues();
+  for(var i=1; i<data.length; i++) {
+    if(data[i][0] === p.actId) {
+      sheet.getRange(i+1, 4).setValue(JSON.stringify(p.configJSON));
+      return { status: 'success', message: 'บันทึกรูปแบบสำเร็จ' };
+    }
+  }
+  return { status: 'error', message: 'ไม่พบกิจกรรม' };
+}
+
+function importStudents(p) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Students');
+  deleteRowsByValue('Students', 1, p.actId); // Clear previous list
+  
+  p.studentList.forEach(function(s, idx) {
+    var certNo = 'CERT-' + p.actId.slice(-4) + '-' + (1000 + idx);
+    var score = Number(s.Score) || 0;
+    var medal = score >= 80 ? 'เหรียญทอง' : (score >= 70 ? 'เหรียญเงิน' : (score >= 60 ? 'เหรียญทองแดง' : 'เข้าร่วม'));
+    sheet.appendRow(['STD'+new Date().getTime()+idx, p.actId, certNo, s.Name, score, medal, (idx+1).toString()]);
+  });
+  return { status: 'success', message: 'บันทึกรายชื่อผู้ได้รับเรียบร้อยแล้ว' };
+}
+
+function searchCertificates(p) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var students = getSheetObjects(ss.getSheetByName('Students'));
+  var activities = getSheetObjects(ss.getSheetByName('Activities'));
+  
+  var matched = students.filter(function(s){ return s.Name.indexOf(p.queryName) !== -1; });
+  return matched.map(function(s) {
+    var act = activities.find(function(a){ return a.ID === s.ActivityID; });
+    return {
+      student: s,
+      activityTitle: act ? act.Title : '',
+      config: act ? (typeof act.ConfigJSON === 'string' ? JSON.parse(act.ConfigJSON) : act.ConfigJSON) : null
+    };
+  });
+}
+
+function verifyCertificate(p) {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var students = getSheetObjects(ss.getSheetByName('Students'));
+  var student = students.find(function(s){ return s.CertNo === p.refId; });
+  if(!student) return { valid: false };
+  
+  var activities = getSheetObjects(ss.getSheetByName('Activities'));
+  var act = activities.find(function(a){ return a.ID === student.ActivityID; });
+  return {
+    valid: true,
+    student: student,
+    activityTitle: act ? act.Title : ''
+  };
+}
+
+// HELPER FUNCTIONS
+function getSheetObjects(sheet) {
+  var data = sheet.getDataRange().getValues();
+  if(data.length <= 1) return [];
+  var headers = data[0];
+  var result = [];
+  for(var i=1; i<data.length; i++) {
+    var obj = {};
+    for(var j=0; j<headers.length; j++) {
+      obj[headers[j]] = data[i][j];
+    }
+    result.push(obj);
+  }
+  return result;
+}
+
+function deleteRowById(sheetName, id) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  var data = sheet.getDataRange().getValues();
+  for(var i=1; i<data.length; i++) {
+    if(data[i][0] === id) {
+      sheet.deleteRow(i+1);
+      break;
+    }
+  }
+}
+
+function deleteRowsByValue(sheetName, colIndex, val) {
+  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
+  var data = sheet.getDataRange().getValues();
+  for(var i=data.length-1; i>=1; i--) {
+    if(data[i][colIndex] === val) {
+      sheet.deleteRow(i+1);
+    }
+  }
+}</pre>
       </div>
 
       <div class="flex justify-between items-center">
-        <span class="text-xs text-slate-400">เวอร์ชันที่ปรับปรุงแล้ว: แก้ไข doGet ซ้ำ, ปรับปรุง JSON handling &amp; Multi-user</span>
+        <span class="text-xs text-slate-400">เวอร์ชันที่ปรับปรุงแล้ว: แก้ไข doGet ซ้ำ, ปรับปรุง JSON handling & Multi-user</span>
         <button onclick="copyGasCode()" class="bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-md">
           <i class="fa-solid fa-copy"></i> คัดลอกโค้ด Code.gs ทั้งหมด
         </button>
@@ -624,13 +873,12 @@
       initCanvas();
       checkApiConfigStatus();
       checkUrlParams();
-      loadGasCodePreview();
     };
 
     function checkApiConfigStatus() {
       const banner = document.getElementById('api-warning-banner');
       if (!banner) return;
-      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('YOUR_DEPLOYMENT_ID');
+      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('https://script.google.com/macros/s/AKfycbwApdqv_PGVNcPvQSrSQWF3gJxfjHCY4MolWf1efbAWthmWBGfn-bcnCF4cAoSM8onN/exec');
       
       if (isUnconfigured && currentUser && currentUser.role === 'ADMIN') {
         banner.classList.remove('hidden');
@@ -1323,7 +1571,7 @@
         });
 
         const qrContainer = document.createElement('div');
-        const currentUrl = window.location.href.split('?')[0];
+        const currentUrl = window.location.origin + window.location.pathname;
         const verifyUrl = `${currentUrl}?idref=${student.CertNo}`;
 
         new QRCode(qrContainer, { text: verifyUrl, width: 75, height: 75 });
@@ -1404,10 +1652,6 @@
       navigator.clipboard.writeText(codeText).then(() => {
         Swal.fire('คัดลอกสำเร็จ', 'คัดลอกโค้ด Code.gs ไปยังคลิปบอร์ดเรียบร้อยแล้ว', 'success');
       });
-    }
-
-    function loadGasCodePreview() {
-      const gasSourceCode = document.getElementById('gas-code-text').textContent || `// ดูโค้ดได้ในส่วน Backend ของ Google Apps Script`;
     }
   </script>
 </body>
