@@ -1735,11 +1735,11 @@ function importStudents(actId, studentList) {
   const timestamp = Date.now().toString().slice(-6);
   sorted.forEach((st, idx) => {
     const certNo = 'CERT-' + timestamp + '-' + String(idx + 1).padStart(3, '0');
-    let medal = 'เข้าร่วม';
+    let medal = 'ได้เข้าร่วม';
     const score = Number(st.Score) || 0;
-    if (score >= 80) medal = 'รับรางวัล เหรียญทอง';
-    else if (score >= 70) medal = 'รับรางวัล เหรียญเงิน';
-    else if (score >= 60) medal = 'รับรางวัล เหรียญทองแดง';
+    if (score >= 80) medal = 'ได้รับรางวัล เหรียญทอง';
+    else if (score >= 70) medal = 'ได้รับรางวัล เหรียญเงิน';
+    else if (score >= 60) medal = 'ได้รับรางวัล เหรียญทองแดง';
 
     sheet.appendRow([
       'STU_' + Date.now() + '_' + idx,
