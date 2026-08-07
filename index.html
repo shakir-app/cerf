@@ -1,386 +1,1707 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="th" class="h-full bg-slate-50">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบออกแบบและออกเกียรติบัตรออนไลน์</title>
-  
-  <!-- Tailwind CSS & FontAwesome -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  
-  <!-- Google Fonts (Sarabun) -->
+  <title>ระบบตรวจสอบและออกเกียรติบัตรออนไลน์ (E-Certificate System)</title>
+
+  <!-- Google Fonts Thai -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@300;400;500;600;700&family=Chakra+Petch:wght@300;400;600&family=Kanit:wght@300;400;500;600&family=Mali:wght@400;600&family=Prompt:wght@300;400;500;600&family=Sarabun:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Fabric.js & SweetAlert2 -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Sarabun', 'sans-serif'],
+            prompt: ['Prompt', 'sans-serif'],
+            kanit: ['Kanit', 'sans-serif'],
+            mali: ['Mali', 'cursive'],
+            chakra: ['Chakra Petch', 'sans-serif'],
+            baijam: ['Bai Jamjuree', 'sans-serif']
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- SweetAlert2 -->
   <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+  <!-- Fabric.js Canvas Editor -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+
+  <!-- SheetJS Excel Parser -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+
+  <!-- QRCode.js Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- jsPDF Generator -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
   <style>
     body { font-family: 'Sarabun', sans-serif; }
-    .canvas-container { margin: 0 auto !important; }
+    .canvas-wrapper {
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+      border-radius: 16px;
+      overflow: hidden;
+      background: #ffffff;
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+    
+    /* Futuristic Glassmorphism Effects */
+    .glass-card {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(226, 232, 240, 0.8);
+    }
+    .glass-dark {
+      background: rgba(15, 23, 42, 0.92);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(51, 65, 85, 0.6);
+    }
+    .glow-indigo {
+      box-shadow: 0 0 25px -5px rgba(99, 102, 241, 0.3);
+    }
   </style>
 </head>
-<body class="bg-slate-100 text-slate-800 min-h-screen flex flex-col">
+<body class="h-full flex flex-col bg-slate-900 text-slate-100 selection:bg-indigo-500 selection:text-white">
 
   <!-- NAVBAR -->
-  <nav class="bg-indigo-900 text-white shadow-lg sticky top-0 z-40">
-    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
-      <div class="flex items-center gap-3">
-        <i class="fa-solid fa-award text-amber-400 text-2xl"></i>
-        <h1 class="font-bold text-lg">ระบบเกียรติบัตรออนไลน์</h1>
-      </div>
-      <div id="nav-buttons" class="flex gap-2">
-        <button onclick="switchView('designer')" class="px-3 py-1.5 bg-indigo-800 hover:bg-indigo-700 rounded-lg text-xs font-semibold">
-          <i class="fa-solid fa-pen-ruler mr-1"></i> ปรับแต่งเกียรติบัตร
-        </button>
-        <button onclick="switchView('admin')" class="px-3 py-1.5 bg-amber-500 hover:bg-amber-600 rounded-lg text-xs font-semibold text-slate-900">
-          <i class="fa-solid fa-user-shield mr-1"></i> ผู้ดูแลระบบ
-        </button>
+  <nav class="bg-slate-950/80 backdrop-blur-md text-white shadow-xl sticky top-0 z-40 border-b border-slate-800/80">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-16">
+        <div class="flex items-center gap-3 cursor-pointer group" onclick="showSection('search-section')">
+          <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-400 via-amber-500 to-indigo-600 p-[1.5px] shadow-lg shadow-indigo-500/20 group-hover:scale-105 transition-transform duration-300">
+            <div class="w-full h-full bg-slate-950 rounded-[10px] flex items-center justify-center text-amber-400 font-bold">
+              <i class="fa-solid fa-award text-xl"></i>
+            </div>
+          </div>
+          <div>
+            <span class="font-bold text-lg md:text-xl tracking-tight block font-prompt bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">ระบบเกียรติบัตรออนไลน์</span>
+            <span class="text-[11px] text-indigo-400/90 block -mt-1 font-light tracking-wide">E-Certificate Management System</span>
+          </div>
+        </div>
+
+        <div id="nav-actions" class="flex items-center gap-2">
+          <!-- Default: Show Login Button ONLY to guest visitors -->
+          <button onclick="openLoginModal()" class="relative group overflow-hidden bg-gradient-to-r from-amber-400 via-amber-500 to-amber-600 hover:from-amber-300 hover:to-amber-500 text-slate-950 px-4 py-2 rounded-xl text-xs md:text-sm font-bold transition-all duration-300 shadow-md hover:shadow-amber-500/25 active:scale-95 flex items-center gap-2 border border-amber-300/50">
+            <i class="fa-solid fa-right-to-bracket text-slate-900 group-hover:rotate-12 transition-transform duration-300"></i>
+            <span>เข้าสู่ระบบ</span>
+          </button>
+        </div>
       </div>
     </div>
   </nav>
 
   <!-- MAIN CONTAINER -->
-  <main class="max-w-7xl mx-auto p-4 md:p-6 flex-1 w-full">
+  <main class="flex-grow max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
 
-    <!-- ========================================== -->
-    <!-- 1. DESIGNER SECTION (หน้าออกแบบเกียรติบัตร) -->
-    <!-- ========================================== -->
-    <section id="designer-section" class="space-y-4">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+    <!-- API CONFIG BANNER (Visible only to Admin when unconfigured) -->
+    <div id="api-warning-banner" class="hidden mb-6 bg-amber-950/50 border border-amber-500/40 p-4 rounded-2xl shadow-xl backdrop-blur-md">
+      <div class="flex items-start">
+        <div class="flex-shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center border border-amber-500/30">
+            <i class="fa-solid fa-triangle-exclamation text-lg"></i>
+          </div>
+        </div>
+        <div class="ml-3.5">
+          <h3 class="text-sm font-bold text-amber-200 font-prompt">ยังไม่ได้ตั้งค่า Google Apps Script Web App URL</h3>
+          <p class="text-xs text-amber-300/80 mt-1">กรุณาคลิกปุ่ม <span class="font-bold cursor-pointer underline text-amber-200" onclick="openApiConfigModal()">"ตั้งค่า API URL"</span> เพื่อเชื่อมต่อข้อมูลกับ Google Sheets</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 1. PUBLIC SEARCH SECTION -->
+    <section id="search-section" class="space-y-8 transition-all duration-300">
+      <div class="glass-dark p-8 md:p-12 rounded-3xl text-center max-w-3xl mx-auto border border-slate-800 shadow-2xl relative overflow-hidden">
+        <div class="absolute -top-24 -right-24 w-48 h-48 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="w-16 h-16 bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+          <i class="fa-solid fa-magnifying-glass"></i>
+        </div>
+        <h1 class="text-2xl md:text-3xl font-bold text-white mb-2 font-prompt tracking-wide">ค้นหาและดาวน์โหลดเกียรติบัตร</h1>
+        <p class="text-slate-400 text-xs md:text-sm mb-6 max-w-lg mx-auto leading-relaxed">ระบุชื่อ-นามสกุล ของท่านเพื่อค้นหาเกียรติบัตร สามารถดาวน์โหลดเป็นไฟล์รูปภาพ (PNG) หรือเอกสาร (PDF) ได้ทันที</p>
         
-        <!-- SIDEBAR TOOLBOX (3 Cols) -->
-        <div class="lg:col-span-3 bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-5">
-          <h3 class="font-bold text-slate-800 border-b pb-2 flex items-center gap-2">
-            <i class="fa-solid fa-sliders text-indigo-600"></i> เครื่องมือออกแบบ
-          </h3>
+        <div class="flex flex-col sm:flex-row gap-2.5 max-w-xl mx-auto">
+          <div class="relative flex-grow">
+            <i class="fa-solid fa-user text-slate-500 absolute left-4 top-3.5 text-base"></i>
+            <input type="text" id="search-input" placeholder="พิมพ์ชื่อ-นามสกุล (เช่น นายสมชาย ใจดี)" class="w-full pl-11 pr-4 py-3 bg-slate-900/90 border border-slate-700/80 text-white rounded-xl focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 focus:outline-none transition text-sm shadow-inner placeholder-slate-500">
+          </div>
+          <button onclick="searchCertificates()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-3 rounded-xl font-medium transition flex items-center justify-center gap-2 text-sm shadow-lg shadow-indigo-600/30 active:scale-95">
+            <i class="fa-solid fa-search"></i> ค้นหา
+          </button>
+        </div>
+      </div>
 
-          <!-- แทรกตัวแปรข้อความ -->
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">แทรกตัวแปรข้อความ</label>
-            <div class="grid grid-cols-2 gap-1.5 text-xs">
-              <button type="button" onclick="addTextVariable('{ชื่อ-สกุลผู้รับเกียรติบัตร}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded text-left font-mono">{ชื่อ-สกุล}</button>
-              <button type="button" onclick="addTextVariable('{เหรียญ}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded text-left font-mono">{เหรียญ}</button>
-              <button type="button" onclick="addTextVariable('{ลำดับ}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded text-left font-mono">{ลำดับ}</button>
-              <button type="button" onclick="addTextVariable('{เลขที่}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded text-left font-mono">{เลขที่}</button>
+      <!-- RESULTS CONTAINER -->
+      <div id="search-results" class="space-y-8"></div>
+    </section>
+
+    <!-- 2. ADMIN DASHBOARD SECTION -->
+    <section id="admin-section" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-slate-950/90 text-white p-5 rounded-3xl shadow-xl border border-indigo-500/20 gap-4 relative overflow-hidden backdrop-blur-xl">
+        <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="relative z-10">
+          <h2 class="text-xl font-bold text-white flex items-center gap-2.5 font-prompt">
+            <span class="w-8 h-8 rounded-xl bg-indigo-500/20 text-indigo-400 flex items-center justify-center border border-indigo-500/30">
+              <i class="fa-solid fa-shield-halved text-sm"></i>
+            </span>
+            แผงควบคุมผู้ดูแลระบบ (Admin Dashboard)
+          </h2>
+          <p class="text-xs text-slate-400 mt-1">จัดการโลโก้ ลายเซ็น บัญชีผู้ใช้งานครู และการตั้งค่า API Developer</p>
+        </div>
+
+        <!-- Hidden Developer & API Tools Accessible Only to Admin -->
+        <div class="flex flex-wrap items-center gap-2 relative z-10">
+          <button onclick="openApiConfigModal()" class="bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 border border-indigo-700/60 hover:border-indigo-500 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm hover:shadow-indigo-500/20 active:scale-95" title="ตั้งค่าการเชื่อมต่อ Google Apps Script">
+            <i class="fa-solid fa-plug text-amber-400"></i>
+            <span>ตั้งค่า API URL</span>
+          </button>
+
+          <button onclick="openGasCodeModal()" class="bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-700 hover:border-emerald-500/50 px-3.5 py-2 rounded-xl text-xs font-semibold transition flex items-center gap-2 shadow-sm active:scale-95" title="ดูซอร์สโค้ด Code.gs">
+            <i class="fa-solid fa-code text-emerald-400"></i>
+            <span>ซอร์สโค้ด Code.gs</span>
+          </button>
+
+          <button onclick="loadAdminData()" class="bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3.5 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-rotate text-xs"></i>
+            <span>รีเฟรช</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- RESULTS CONTAINER -->
+      <div id="search-results" class="space-y-8"></div>
+    </section>
+
+    <!-- 2. ADMIN DASHBOARD SECTION -->
+    <section id="admin-section" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 gap-4">
+        <div>
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-indigo-600"></i> แผงควบคุมผู้ดูแลระบบ (Admin Dashboard)
+          </h2>
+          <p class="text-xs text-slate-500 mt-1">จัดการโลโก้ ลายเซ็น และบัญชีผู้ใช้งานครูประจำกิจกรรม</p>
+        </div>
+        <button onclick="loadAdminData()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3.5 py-2 rounded-xl text-xs font-medium transition self-start sm:self-auto flex items-center gap-1.5">
+          <i class="fa-solid fa-rotate"></i> รีเฟรชข้อมูล
+        </button>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- LOGO MANAGEMENT -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between text-slate-800">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-image text-indigo-500"></i> จัดการโลโก้หน่วยงาน (สูงสุด 5 รายการ)
+              </h3>
             </div>
-          </div>
-
-          <!-- แทรกข้อความทั่วไป -->
-          <div class="space-y-1">
-            <label class="block text-xs font-semibold text-slate-500 mb-1">แทรกข้อความทั่วไป</label>
-            <button type="button" onclick="addCustomText()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-2 rounded-lg text-xs font-semibold flex items-center justify-center gap-1">
-              <i class="fa-solid fa-font"></i> เพิ่มข้อความทั่วไป
-            </button>
-          </div>
-
-          <hr class="border-slate-100">
-
-          <!-- เครื่องมือปรับแต่งข้อความ (Active Object Tools) -->
-          <div class="space-y-3">
-            <label class="block text-xs font-semibold text-slate-500">ปรับแต่งวัตถุที่เลือก</label>
             
-            <div class="flex gap-2">
-              <input type="color" id="text-color" onchange="updateSelectedText('fill', this.value)" class="w-10 h-9 rounded cursor-pointer border p-0.5">
-              <input type="number" id="text-size" placeholder="ขนาด" onchange="updateSelectedText('fontSize', parseInt(this.value))" class="w-full p-2 border rounded text-xs">
-            </div>
-
-            <div class="grid grid-cols-3 gap-1 text-xs">
-              <button onclick="toggleTextStyle('bold')" class="bg-slate-100 p-2 rounded font-bold hover:bg-slate-200">B</button>
-              <button onclick="toggleTextStyle('italic')" class="bg-slate-100 p-2 rounded italic hover:bg-slate-200">I</button>
-              <button onclick="deleteActiveObject()" class="bg-red-50 text-red-600 p-2 rounded hover:bg-red-100"><i class="fa-solid fa-trash"></i></button>
-            </div>
+            <form id="logo-form" onsubmit="handleSaveLogo(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60 mb-4">
+              <input type="text" id="logo-name" placeholder="ชื่อเรียกโลโก้ (เช่น โลโก้กระทรวง)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <input type="url" id="logo-url" placeholder="URL รูปโลโก้ (ไฟล์ PNG พื้นหลังโปร่งใส)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <input type="text" id="logo-org" placeholder="ชื่อหน่วยงาน / โรงเรียน" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-xs font-medium transition">
+                <i class="fa-solid fa-plus-circle mr-1"></i> บันทึกโลโก้
+              </button>
+            </form>
           </div>
-
-          <hr class="border-slate-100">
-
-          <!-- แทรกองค์ประกอบภาพ -->
-          <div class="space-y-2">
-            <label class="block text-xs font-semibold text-slate-500">แทรกภาพ/ลายเซ็น</label>
-            <button onclick="openAdminModal('logo-modal')" class="w-full text-left bg-indigo-50 text-indigo-700 p-2 rounded text-xs font-medium hover:bg-indigo-100 flex justify-between items-center">
-              <span><i class="fa-solid fa-image mr-1"></i> เลือกโลโก้หน่วยงาน</span>
-              <i class="fa-solid fa-chevron-right text-[10px]"></i>
-            </button>
-            <button onclick="openAdminModal('sig-modal')" class="w-full text-left bg-indigo-50 text-indigo-700 p-2 rounded text-xs font-medium hover:bg-indigo-100 flex justify-between items-center">
-              <span><i class="fa-solid fa-file-signature mr-1"></i> เลือกลายเซ็น</span>
-              <i class="fa-solid fa-chevron-right text-[10px]"></i>
-            </button>
+          <div>
+            <span class="text-xs font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการโลโก้ในระบบ</span>
+            <div id="logo-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div>
           </div>
         </div>
 
-        <!-- CANVAS WORKSPACE (9 Cols) -->
-        <div class="lg:col-span-9 flex flex-col items-center">
-          <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 w-full flex justify-center overflow-auto">
-            <canvas id="cert-canvas" width="842" height="595" class="border shadow-lg rounded"></canvas>
+        <!-- SIGNATURE MANAGEMENT -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between">
+          <div>
+            <div class="flex justify-between items-center mb-4">
+              <h3 class="font-bold text-base text-slate-800 flex items-center gap-2">
+                <i class="fa-solid fa-signature text-indigo-500"></i> จัดการลายเซ็นดิจิทัล
+              </h3>
+            </div>
+            
+            <form id="sig-form" onsubmit="handleSaveSig(event)" class="space-y-3 bg-slate-50 p-4 rounded-xl border border-slate-200/60 mb-4">
+              <input type="text" id="sig-name" placeholder="ชื่อ-นามสกุล เจ้าของลายเซ็น" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <input type="url" id="sig-url" placeholder="URL รูปลายเซ็น (ไฟล์ PNG โปร่งใส)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <input type="text" id="sig-pos" placeholder="ตำแหน่ง (เช่น ผู้อำนวยการโรงเรียน...)" class="w-full p-2.5 bg-white border border-slate-300 rounded-lg text-xs focus:ring-1 focus:ring-indigo-500" required>
+              <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-lg text-xs font-medium transition">
+                <i class="fa-solid fa-plus-circle mr-1"></i> บันทึกลายเซ็น
+              </button>
+            </form>
           </div>
-          <div class="mt-4 flex gap-3">
-            <button onclick="saveCanvasTemplate()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-6 py-2.5 rounded-xl font-medium text-sm shadow-sm">
-              <i class="fa-solid fa-floppy-disk mr-1"></i> บันทึกแม่แบบเกียรติบัตร
-            </button>
+          <div>
+            <span class="text-xs font-bold text-slate-400 block mb-2 uppercase tracking-wider">รายการลายเซ็นในระบบ</span>
+            <div id="sig-list" class="space-y-2 max-h-48 overflow-y-auto custom-scrollbar pr-1"></div>
           </div>
         </div>
 
+        <!-- TEACHER USER MANAGEMENT -->
+        <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200/80 lg:col-span-2">
+          <h3 class="font-bold text-base text-slate-800 mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-chalkboard-user text-indigo-500"></i> จัดการผู้ใช้งานผู้สอน / ครู (Teacher Accounts)
+          </h3>
+          <form id="teacher-form" onsubmit="handleSaveTeacher(event)" class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-6 bg-slate-50 p-4 rounded-xl border border-slate-200/60">
+            <input type="text" id="tch-user" placeholder="Username" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
+            <input type="password" id="tch-pass" placeholder="Password" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
+            <input type="text" id="tch-name" placeholder="ชื่อ-นามสกุล ครู" class="p-2.5 bg-white border border-slate-300 rounded-lg text-xs" required>
+            <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white py-2.5 rounded-lg text-xs font-medium transition flex items-center justify-center gap-1">
+              <i class="fa-solid fa-user-plus"></i> เพิ่ม/แก้ไขบัญชี
+            </button>
+          </form>
+
+          <div class="overflow-x-auto rounded-xl border border-slate-200">
+            <table class="w-full text-left text-xs">
+              <thead class="bg-slate-100 text-slate-600 font-semibold uppercase tracking-wider border-b border-slate-200">
+                <tr>
+                  <th class="p-3">Username</th>
+                  <th class="p-3">ชื่อ-นามสกุล</th>
+                  <th class="p-3">สถานะ</th>
+                  <th class="p-3 text-center">จัดการ</th>
+                </tr>
+              </thead>
+              <tbody id="teacher-table-body" class="divide-y divide-slate-100 bg-white"></tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- ========================================== -->
-    <!-- 2. ADMIN DASHBOARD (รูปแบบ Menu Cards) -->
-    <!-- ========================================== -->
-    <section id="admin-section" class="hidden space-y-6">
-      <div class="flex justify-between items-center bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
+    <!-- 3. TEACHER DASHBOARD SECTION -->
+    <section id="teacher-section" class="hidden space-y-6">
+      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 gap-4">
         <div>
-          <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-            <i class="fa-solid fa-user-shield text-indigo-600"></i> แผงควบคุมผู้ดูแลระบบ (Admin)
+          <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+            <i class="fa-solid fa-folder-open text-indigo-600"></i> รายการกิจกรรมออกเกียรติบัตร
           </h2>
-          <p class="text-xs text-slate-400 mt-1">เลือกเมนูกิจกรรมด้านล่างเพื่อจัดการข้อมูลระบบ</p>
+          <p class="text-xs text-slate-500 mt-1">สร้างกิจกรรม ออกแบบแม่แบบเกียรติบัตร และนำเข้ารายชื่อผู้ได้รับเกียรติบัตร</p>
+        </div>
+        <button onclick="openCreateActivityModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-xs font-medium transition shadow-sm flex items-center gap-2">
+          <i class="fa-solid fa-plus-circle text-amber-300"></i> สร้างกิจกรรมใหม่
+        </button>
+      </div>
+
+      <div id="activity-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+    </section>
+
+    <!-- 4. VISUAL CANVAS EDITOR SECTION -->
+    <section id="editor-section" class="hidden space-y-4">
+      <div class="flex flex-wrap justify-between items-center bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 gap-3">
+        <button onclick="showSection('teacher-section')" class="text-slate-600 hover:text-indigo-600 text-xs font-medium flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-arrow-left"></i> กลับไปยังรายการกิจกรรม
+        </button>
+        <div class="text-center">
+          <span id="current-act-title" class="font-bold text-base text-slate-900 block font-prompt"></span>
+          <span class="text-[11px] text-slate-400">สตูดิโอออกแบบเกียรติบัตรออนไลน์ (Canvas Designer)</span>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="openManageStudentsModal()" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 border border-indigo-200 px-3.5 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1">
+            <i class="fa-solid fa-users text-indigo-600"></i> กรอก/นำเข้าข้อมูลผู้ได้รับ
+          </button>
+          <button onclick="saveCanvasDesign()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-floppy-disk text-emerald-200"></i> บันทึกรูปแบบ
+          </button>
         </div>
       </div>
 
-      <!-- การ์ดเมนู 3 หมวดหมู่หลัก -->
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
-        <!-- Card 1: จัดการโลโก้ -->
-        <div onclick="openAdminModal('logo-modal')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition cursor-pointer flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl group-hover:bg-indigo-600 group-hover:text-white transition">
-              <i class="fa-solid fa-image"></i>
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        <!-- CANVAS TOOLBAR -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 space-y-5 lg:col-span-1 custom-scrollbar max-h-[800px] overflow-y-auto">
+          <h3 class="font-bold text-sm text-slate-800 border-b pb-2 flex items-center gap-2">
+            <i class="fa-solid fa-sliders text-indigo-500"></i> เครื่องมือการออกแบบ
+          </h3>
+
+          <!-- Background Image Tool -->
+          <div class="space-y-1.5">
+            <label class="block text-xs font-semibold text-slate-600">1. ภาพพื้นหลังเกียรติบัตร (BG)</label>
+            <input type="file" id="bg-file-input" accept="image/*" onchange="uploadCanvasBg(event)" class="text-xs w-full text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer">
+            <p class="text-[10px] text-slate-400">แนะนำขนาด 800x565 หรือสัดส่วน 4:3 (A4 แนวนอน)</p>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <!-- Logos & Signatures Insert -->
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-600">2. แทรกโลโก้ / ลายเซ็น</label>
+            <div class="space-y-1.5">
+              <select id="select-logo" class="w-full text-xs p-2 border border-slate-200 rounded-lg bg-slate-50">
+                <option value="">-- เลือกโลโก้ --</option>
+              </select>
+              <button onclick="addLogoToCanvas()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg text-xs transition font-medium">
+                <i class="fa-solid fa-plus mr-1"></i> เพิ่มโลโก้ลง Canvas
+              </button>
             </div>
-            <div>
-              <h3 class="font-bold text-lg text-slate-800">ตั้งค่าโลโก้</h3>
-              <p class="text-xs text-slate-400 mt-1">อัพโหลดและจัดการโลโก้หน่วยงาน</p>
+
+            <div class="space-y-1.5">
+              <select id="select-sig" class="w-full text-xs p-2 border border-slate-200 rounded-lg bg-slate-50">
+                <option value="">-- เลือกลายเซ็น --</option>
+              </select>
+              <button onclick="addSigToCanvas()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg text-xs transition font-medium">
+                <i class="fa-solid fa-plus mr-1"></i> เพิ่มลายเซ็นลง Canvas
+              </button>
             </div>
           </div>
-          <div class="mt-6 flex items-center text-xs font-semibold text-indigo-600 group-hover:translate-x-1 transition">
-            จัดการโลโก้ <i class="fa-solid fa-arrow-right ml-2"></i>
+
+          <hr class="border-slate-100">
+
+          <!-- Dynamic Text Tags -->
+          <div class="space-y-2">
+            <label class="block text-xs font-semibold text-slate-600">3. แทรกข้อความตัวแปรอัตโนมัติ</label>
+            <div class="grid grid-cols-2 gap-1.5 text-xs">
+              <button onclick="addTextVariable('{ชื่อ-สกุลผู้รับเกียรติบัตร}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg text-left font-mono text-[11px] transition truncate">{ชื่อ-สกุล}</button>
+              <button onclick="addTextVariable('{เหรียญ}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg text-left font-mono text-[11px] transition truncate">{เหรียญ}</button>
+              <button onclick="addTextVariable('{ลำดับ}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg text-left font-mono text-[11px] transition truncate">{ลำดับ}</button>
+              <button onclick="addTextVariable('{เลขที่}')" class="bg-indigo-50 hover:bg-indigo-100 text-indigo-700 p-2 rounded-lg text-left font-mono text-[11px] transition truncate">{เลขที่}</button>
+            </div>
+            <button onclick="addTextVariable('ข้อความทั่วไป')" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 py-1.5 rounded-lg text-xs transition font-medium mt-1">
+              <i class="fa-solid fa-font mr-1"></i> เพิ่มข้อความทั่วไป
+            </button>
+          </div>
+
+          <hr class="border-slate-100">
+
+          <!-- Text Properties Tools -->
+          <div class="space-y-3">
+            <label class="block text-xs font-semibold text-slate-600">4. ตกแต่งวัตถุที่เลือก</label>
+            
+            <div>
+              <label class="block text-[11px] text-slate-500 mb-1">ฟอนต์ (Font Family)</label>
+              <select id="font-family-select" onchange="changeFontFamily(this.value)" class="w-full text-xs p-2 border border-slate-200 rounded-lg bg-slate-50">
+                <option value="Sarabun">Sarabun (สารบรรณ)</option>
+                <option value="Prompt">Prompt (พร้อมท์)</option>
+                <option value="Kanit">Kanit (คณิต)</option>
+                <option value="Mali">Mali (มะลิ - ลายมือ)</option>
+                <option value="Chakra Petch">Chakra Petch (จักรเพชร)</option>
+                <option value="Bai Jamjuree">Bai Jamjuree (ใบจามจุรี)</option>
+              </select>
+            </div>
+
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-500 mb-1">ขนาดฟอนต์</label>
+                <input type="number" id="text-size" placeholder="28" onchange="changeFontSize(this.value)" class="w-full text-xs p-2 border border-slate-200 rounded-lg bg-slate-50">
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-500 mb-1">สีตัวอักษร</label>
+                <input type="color" id="text-color" onchange="changeTextColor(this.value)" class="w-full h-8 p-0.5 border border-slate-200 rounded-lg cursor-pointer bg-white">
+              </div>
+            </div>
+
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="toggleBold()" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs font-bold hover:bg-slate-100" title="ตัวหนา">B</button>
+              <button onclick="toggleItalic()" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs italic hover:bg-slate-100" title="ตัวเอียง">I</button>
+              <button onclick="setTextAlign('left')" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-100" title="ชิดซ้าย"><i class="fa-solid fa-align-left"></i></button>
+              <button onclick="setTextAlign('center')" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-100" title="จัดกึ่งกลาง"><i class="fa-solid fa-align-center"></i></button>
+              <button onclick="setTextAlign('right')" class="flex-1 py-1.5 border border-slate-200 rounded-lg text-xs hover:bg-slate-100" title="ชิดขวา"><i class="fa-solid fa-align-right"></i></button>
+            </div>
+
+            <div class="flex gap-1.5 pt-1">
+              <button onclick="bringForward()" class="flex-1 bg-slate-100 hover:bg-slate-200 py-1.5 rounded-lg text-[11px] text-slate-700" title="นำขึ้น 1 ชั้น">ขยับขึ้น</button>
+              <button onclick="sendBackward()" class="flex-1 bg-slate-100 hover:bg-slate-200 py-1.5 rounded-lg text-[11px] text-slate-700" title="ถอยหลัง 1 ชั้น">ขยับลง</button>
+              <button onclick="deleteActiveObject()" class="flex-1 bg-rose-50 hover:bg-rose-100 text-rose-600 py-1.5 rounded-lg text-[11px] font-medium" title="ลบวัตถุ"><i class="fa-solid fa-trash"></i> ลบ</button>
+            </div>
           </div>
         </div>
 
-        <!-- Card 2: จัดการลายเซ็น -->
-        <div onclick="openAdminModal('sig-modal')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition cursor-pointer flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl group-hover:bg-indigo-600 group-hover:text-white transition">
-              <i class="fa-solid fa-file-signature"></i>
-            </div>
-            <div>
-              <h3 class="font-bold text-lg text-slate-800">จัดการลายเซ็น</h3>
-              <p class="text-xs text-slate-400 mt-1">เพิ่ม/แก้ไขลายเซ็น ชื่อ-สกุล และตำแหน่ง</p>
-            </div>
+        <!-- CANVAS WORKSPACE -->
+        <div class="lg:col-span-3 flex flex-col justify-center items-center bg-slate-200/80 p-4 sm:p-6 rounded-2xl overflow-auto min-h-[500px]">
+          <div class="canvas-wrapper">
+            <canvas id="cert-canvas" width="800" height="565"></canvas>
           </div>
-          <div class="mt-6 flex items-center text-xs font-semibold text-indigo-600 group-hover:translate-x-1 transition">
-            จัดการลายเซ็น <i class="fa-solid fa-arrow-right ml-2"></i>
-          </div>
+          <span class="text-xs text-slate-500 mt-3"><i class="fa-solid fa-circle-info mr-1"></i> ขนาด Canvas มาตรฐานสำหรับเกียรติบัตรคือ 800 x 565 พิกเซล</span>
         </div>
-
-        <!-- Card 3: จัดการข้อมูลครู -->
-        <div onclick="openAdminModal('teacher-modal')" class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 hover:shadow-md hover:border-indigo-200 transition cursor-pointer flex flex-col justify-between group">
-          <div class="space-y-4">
-            <div class="w-12 h-12 bg-indigo-50 text-indigo-600 rounded-xl flex items-center justify-center text-xl group-hover:bg-indigo-600 group-hover:text-white transition">
-              <i class="fa-solid fa-chalkboard-user"></i>
-            </div>
-            <div>
-              <h3 class="font-bold text-lg text-slate-800">จัดการข้อมูลครู</h3>
-              <p class="text-xs text-slate-400 mt-1">เพิ่ม/ลบ บัญชีผู้ใช้งานสำหรับครูผู้ดูแลกิจกรรม</p>
-            </div>
-          </div>
-          <div class="mt-6 flex items-center text-xs font-semibold text-indigo-600 group-hover:translate-x-1 transition">
-            จัดการข้อมูลครู <i class="fa-solid fa-arrow-right ml-2"></i>
-          </div>
-        </div>
-
       </div>
     </section>
 
   </main>
 
-  <!-- ========================================== -->
-  <!-- ADMIN MODALS (ป็อปอัพสำหรับแต่ละเมนู) -->
-  <!-- ========================================== -->
-
-  <!-- MODAL 1: จัดการโลโก้ -->
-  <div id="logo-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
-      <div class="flex justify-between items-center mb-4 border-b pb-3">
-        <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-image text-indigo-600 mr-2"></i>ตั้งค่าโลโก้หน่วยงาน</h3>
-        <button onclick="closeAdminModal('logo-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+  <!-- MODAL: LOGIN -->
+  <div id="login-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md hidden items-center justify-center z-50 p-4">
+    <div class="bg-slate-900 rounded-3xl max-w-sm w-full p-6 shadow-2xl relative border border-slate-800 text-slate-100">
+      <div class="text-center mb-6">
+        <div class="w-12 h-12 bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 rounded-2xl flex items-center justify-center mx-auto mb-2 text-xl shadow-inner">
+          <i class="fa-solid fa-user-lock"></i>
+        </div>
+        <h3 class="text-xl font-bold text-white font-prompt">เข้าสู่ระบบผู้ใช้งาน</h3>
+        <p class="text-xs text-slate-400 mt-1">เฉพาะ Admin และ ครูผู้จัดการกิจกรรม</p>
       </div>
-      
-      <form id="logo-form" onsubmit="event.preventDefault();" class="space-y-3 mb-6 bg-slate-50 p-4 rounded-xl">
-        <input type="text" id="logo-name" placeholder="ชื่อเรียกโลโก้ (เช่น โลโก้โรงเรียน)" class="w-full p-2.5 border rounded-lg text-sm" required>
-        <input type="url" id="logo-url" placeholder="URL รูปโลโก้ (PNG โปร่งแสง)" class="w-full p-2.5 border rounded-lg text-sm" required>
-        <button class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">บันทึกโลโก้</button>
-      </form>
 
-      <h4 class="font-bold text-sm text-slate-700 mb-2">รายการโลโก้ที่มีในระบบ</h4>
-      <div id="logo-list" class="space-y-2 text-sm text-slate-500">ยังไม่มีข้อมูลโลโก้</div>
+      <form onsubmit="handleLogin(event)" class="space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">ชื่อผู้ใช้ (Username)</label>
+          <input type="text" id="login-user" required placeholder="admin หรือ username ของครู" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <div>
+          <label class="text-xs font-semibold text-slate-300 block mb-1">รหัสผ่าน (Password)</label>
+          <input type="password" id="login-pass" required placeholder="••••••••" class="w-full p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white focus:ring-2 focus:ring-indigo-500 focus:outline-none">
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-2.5 rounded-xl text-xs font-semibold transition shadow-lg shadow-indigo-600/30 active:scale-95">
+          เข้าสู่ระบบ
+        </button>
+        <button type="button" onclick="closeLoginModal()" class="w-full bg-slate-800 text-slate-300 py-2 rounded-xl text-xs font-medium hover:bg-slate-700 transition">
+          ยกเลิก
+        </button>
+      </form>
     </div>
   </div>
 
-  <!-- MODAL 2: จัดการลายเซ็น -->
-  <div id="sig-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+  <!-- MODAL: API URL CONFIGURATION -->
+  <div id="api-config-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl relative border border-slate-100">
       <div class="flex justify-between items-center mb-4 border-b pb-3">
-        <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-file-signature text-indigo-600 mr-2"></i>จัดการลายเซ็น</h3>
-        <button onclick="closeAdminModal('sig-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <h3 class="text-lg font-bold text-slate-900 font-prompt flex items-center gap-2">
+          <i class="fa-solid fa-plug text-indigo-600"></i> ตั้งค่าการเชื่อมต่อ Google Apps Script
+        </h3>
+        <button onclick="closeApiConfigModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <form id="sig-form" onsubmit="event.preventDefault();" class="space-y-3 mb-6 bg-slate-50 p-4 rounded-xl">
-        <input type="text" id="sig-name" placeholder="ชื่อ-นามสกุล เจ้าของลายเซ็น" class="w-full p-2.5 border rounded-lg text-sm" required>
-        <input type="url" id="sig-url" placeholder="URL รูปลายเซ็น (PNG โปร่งแสง)" class="w-full p-2.5 border rounded-lg text-sm" required>
-        <input type="text" id="sig-pos" placeholder="ตำแหน่ง (เช่น ผู้อำนวยการโรงเรียน)" class="w-full p-2.5 border rounded-lg text-sm" required>
-        <button class="w-full bg-indigo-600 text-white py-2.5 rounded-lg text-sm font-medium hover:bg-indigo-700 transition">บันทึกลายเซ็น</button>
-      </form>
+      <p class="text-xs text-slate-500 mb-4 leading-relaxed">
+        คัดลอก **Web App URL** ที่ได้จากการ Deploy ใน Google Apps Script (เลือก Executed as: Me และ Who has access: Anyone) นำมาวางที่นี่เพื่อเชื่อมต่อฐานข้อมูล
+      </p>
 
-      <h4 class="font-bold text-sm text-slate-700 mb-2">รายการลายเซ็นที่มีในระบบ</h4>
-      <div id="sig-list" class="space-y-2 text-sm text-slate-500">ยังไม่มีข้อมูลลายเซ็น</div>
+      <div class="space-y-4">
+        <div>
+          <label class="text-xs font-semibold text-slate-700 block mb-1">GAS Web App URL</label>
+          <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full p-3 border border-slate-300 rounded-xl text-xs focus:ring-2 focus:ring-indigo-600 focus:outline-none font-mono">
+        </div>
+
+        <div class="bg-indigo-50 p-3 rounded-xl border border-indigo-100 text-[11px] text-indigo-800 space-y-1">
+          <p class="font-bold"><i class="fa-solid fa-circle-info"></i> คำแนะนำในการตั้งค่าระบบครั้งแรก:</p>
+          <ol class="list-decimal list-inside space-y-0.5 text-indigo-700">
+            <li>วางโค้ดในเมนู "โค้ด Code.gs" ลงในโปรเจกต์ Google Apps Script</li>
+            <li>กดรันฟังก์ชัน <code class="bg-indigo-100 px-1 rounded">initDatabase()</code> เพื่อสร้าง Sheet สำหรับจัดเก็บข้อมูล</li>
+            <li>กด Deploy > New Deployment > Web App</li>
+            <li>คัดลอก URL นำมาวางในช่องด้านบนแล้วกด "บันทึกการเชื่อมต่อ"</li>
+          </ol>
+        </div>
+
+        <div class="flex gap-2">
+          <button onclick="saveApiConfig()" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2.5 rounded-xl text-xs font-medium transition shadow-md">
+            บันทึกการเชื่อมต่อ
+          </button>
+          <button onclick="closeApiConfigModal()" class="px-4 bg-slate-100 text-slate-600 py-2.5 rounded-xl text-xs font-medium hover:bg-slate-200">
+            ปิด
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <!-- MODAL 3: จัดการข้อมูลครู -->
-  <div id="teacher-modal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
-    <div class="bg-white rounded-2xl max-w-2xl w-full p-6 shadow-xl relative max-h-[90vh] overflow-y-auto">
+  <!-- MODAL: CODE.GS VIEWER -->
+  <div id="gas-code-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl relative border border-slate-100 flex flex-col max-h-[85vh]">
       <div class="flex justify-between items-center mb-4 border-b pb-3">
-        <h3 class="text-lg font-bold text-slate-800"><i class="fa-solid fa-chalkboard-user text-indigo-600 mr-2"></i>จัดการข้อมูลครูผู้ใช้งาน</h3>
-        <button onclick="closeAdminModal('teacher-modal')" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-xl"></i></button>
+        <div>
+          <h3 class="text-lg font-bold text-slate-900 font-prompt flex items-center gap-2">
+            <i class="fa-solid fa-code text-emerald-600"></i> โค้ด Code.gs (Google Apps Script Backend)
+          </h3>
+          <p class="text-xs text-slate-400">คัดลอกโค้ดนี้ไปวางใน Google Apps Script เพื่อแก้ไขปัญหา BUGS ทั้งหมดแบบสมบูรณ์</p>
+        </div>
+        <button onclick="closeGasCodeModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
 
-      <form id="teacher-form" onsubmit="event.preventDefault();" class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-6 bg-slate-50 p-4 rounded-xl">
-        <input type="text" id="tch-user" placeholder="Username" class="p-2 border rounded-lg text-sm" required>
-        <input type="password" id="tch-pass" placeholder="Password" class="p-2 border rounded-lg text-sm" required>
-        <input type="text" id="tch-name" placeholder="ชื่อ-นามสกุล ครู" class="p-2 border rounded-lg text-sm" required>
-        <button class="md:col-span-3 bg-emerald-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-emerald-700 transition">เพิ่ม / แก้ไขข้อมูลครู</button>
-      </form>
+      <div class="flex-grow overflow-y-auto mb-4 bg-slate-900 text-slate-200 p-4 rounded-2xl text-xs font-mono custom-scrollbar border border-slate-800">
+        <pre id="gas-code-text"></pre>
+      </div>
 
-      <h4 class="font-bold text-sm text-slate-700 mb-2">รายชื่อครูในระบบ</h4>
-      <div class="overflow-x-auto">
-        <table class="w-full text-left text-sm">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2">Username</th>
-              <th class="p-2">ชื่อ-นามสกุล</th>
-              <th class="p-2 text-center">จัดการ</th>
+      <div class="flex justify-between items-center">
+        <span class="text-xs text-slate-500">เวอร์ชันที่ปรับปรุงแล้ว: แก้ไข doGet ซ้ำ, ปรับปรุง JSON handling & Multi-user</span>
+        <button onclick="copyGasCode()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-medium transition flex items-center gap-1.5 shadow-md">
+          <i class="fa-solid fa-copy"></i> คัดลอกโค้ด Code.gs ทั้งหมด
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: MANAGING STUDENTS -->
+  <div id="student-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-3xl max-w-3xl w-full p-6 shadow-2xl max-h-[90vh] overflow-y-auto custom-scrollbar flex flex-col">
+      <div class="flex justify-between items-center mb-4 border-b pb-3">
+        <div>
+          <h3 class="text-lg font-bold font-prompt text-slate-900">จัดการรายชื่อผู้ได้รับเกียรติบัตร</h3>
+          <p class="text-xs text-slate-400">นำเข้าจากไฟล์ Excel (.xlsx) หรือกรอกข้อมูลด้วยตนเอง</p>
+        </div>
+        <button onclick="closeStudentModal()" class="text-slate-400 hover:text-slate-600"><i class="fa-solid fa-xmark text-lg"></i></button>
+      </div>
+
+      <div class="flex flex-wrap gap-2 mb-4">
+        <button onclick="downloadExcelTemplate()" class="bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1">
+          <i class="fa-solid fa-file-excel text-emerald-600"></i> ดาวน์โหลดไฟล์แม่แบบ Excel
+        </button>
+        <label class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium cursor-pointer transition flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-upload"></i> นำเข้าไฟล์ Excel (.xlsx)
+          <input type="file" accept=".xlsx, .xls" onchange="handleExcelImport(event)" class="hidden">
+        </label>
+        <button onclick="addSingleStudentRow()" class="bg-indigo-600 hover:bg-indigo-700 text-white px-3.5 py-2 rounded-xl text-xs font-medium transition flex items-center gap-1 shadow-sm">
+          <i class="fa-solid fa-plus"></i> เพิ่มทีละรายชื่อ
+        </button>
+      </div>
+
+      <div class="overflow-x-auto flex-grow rounded-xl border border-slate-200 mb-4">
+        <table class="w-full text-left text-xs">
+          <thead>
+            <tr class="bg-slate-100 border-b border-slate-200 text-slate-600 font-semibold">
+              <th class="p-3">ชื่อ-นามสกุล ผู้ได้รับเกียรติบัตร</th>
+              <th class="p-3 w-28">คะแนน</th>
+              <th class="p-3 w-16 text-center">ลบ</th>
             </tr>
           </thead>
-          <tbody id="teacher-table-body">
-            <tr><td colspan="3" class="p-4 text-center text-slate-400">ไม่พบบัญชีผู้ใช้งาน</td></tr>
-          </tbody>
+          <tbody id="student-input-body" class="divide-y divide-slate-100"></tbody>
         </table>
+      </div>
+
+      <div class="flex justify-end gap-2 pt-2 border-t">
+        <button onclick="closeStudentModal()" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 rounded-xl text-xs font-medium text-slate-600">ยกเลิก</button>
+        <button onclick="saveStudentList()" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-medium transition shadow-sm">บันทึกข้อมูลนักเรียนลงระบบ</button>
       </div>
     </div>
   </div>
 
-  <!-- JAVASCRIPT -->
   <script>
-    let fabricCanvas;
+    // DEFAULT GAS URL & APP STATE
+    let GAS_URL = localStorage.getItem('cert_gas_url') || "https://script.google.com/macros/s/AKfycbwApdqv_PGVNcPvQSrSQWF3gJxfjHCY4MolWf1efbAWthmWBGfn-bcnCF4cAoSM8onN/exec";
+    let currentUser = null;
+    let fabricCanvas = null;
+    let currentActivityId = null;
+    let activeLogosList = [];
+    let activeSigsList = [];
 
-    // เริ่มต้นทำงานเมื่อโหลดหน้าเว็บ
-    window.onload = function() {
-      // สร้าง Fabric Canvas (แนวนอน A4 สัดส่วน 842x595)
-      fabricCanvas = new fabric.Canvas('cert-canvas', {
-        backgroundColor: '#ffffff'
-      });
+    window.onload = () => {
+      initCanvas();
+      checkApiConfigStatus();
+      checkUrlParams();
+      loadGasCodePreview();
     };
 
-    // ฟังก์ชันสลับหน้ามุมมอง (Designer / Admin)
-    function switchView(view) {
-      if(view === 'designer') {
-        document.getElementById('designer-section').classList.remove('hidden');
-        document.getElementById('admin-section').classList.add('hidden');
+    function checkApiConfigStatus() {
+      const banner = document.getElementById('api-warning-banner');
+      if (!banner) return;
+      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('YOUR_DEPLOYMENT_ID');
+      const isAdminLoggedIn = currentUser && currentUser.role === 'ADMIN';
+      
+      if (isUnconfigured && isAdminLoggedIn) {
+        banner.classList.remove('hidden');
       } else {
-        document.getElementById('designer-section').classList.add('hidden');
-        document.getElementById('admin-section').classList.remove('hidden');
+        banner.classList.add('hidden');
       }
     }
 
-    // ฟังก์ชันเปิด-ปิด Modal Admin
-    function openAdminModal(modalId) {
-      document.getElementById(modalId).classList.remove('hidden');
-      document.getElementById(modalId).classList.add('flex');
+    function openApiConfigModal() {
+      document.getElementById('gas-url-input').value = GAS_URL;
+      document.getElementById('api-config-modal').classList.remove('hidden');
+      document.getElementById('api-config-modal').classList.add('flex');
     }
 
-    function closeAdminModal(modalId) {
-      document.getElementById(modalId).classList.add('hidden');
-      document.getElementById(modalId).classList.remove('flex');
+    function closeApiConfigModal() {
+      document.getElementById('api-config-modal').classList.add('hidden');
+      document.getElementById('api-config-modal').classList.remove('flex');
     }
 
-    // ฟังก์ชันเพิ่มตัวแปรข้อความลง Canvas
+    function saveApiConfig() {
+      const input = document.getElementById('gas-url-input').value.trim();
+      if (!input) {
+        Swal.fire('เตือน', 'กรุณาระบุ Web App URL', 'warning');
+        return;
+      }
+      GAS_URL = input;
+      localStorage.setItem('cert_gas_url', input);
+      checkApiConfigStatus();
+      closeApiConfigModal();
+      Swal.fire('สำเร็จ', 'บันทึกการเชื่อมต่อ API เรียบร้อยแล้ว', 'success');
+    }
+
+    async function callGAS(action, payload = {}) {
+      if (!GAS_URL || GAS_URL.trim() === '') {
+        Swal.fire('ไม่พบ API URL', 'กรุณาตั้งค่า Google Apps Script Web App URL ก่อนใช้งาน', 'warning');
+        return { status: 'error', message: 'API URL Not Configured' };
+      }
+
+      try {
+        const response = await fetch(GAS_URL, {
+          method: 'POST',
+          mode: 'cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify({ action: action, payload: payload })
+        });
+        return await response.json();
+      } catch (err) {
+        console.error("API Call Error:", err);
+        return { status: 'error', message: 'ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์ Google Apps Script ได้' };
+      }
+    }
+
+    function initCanvas() {
+      fabricCanvas = new fabric.Canvas('cert-canvas', {
+        width: 800,
+        height: 565,
+        backgroundColor: '#ffffff'
+      });
+    }
+
+    function showSection(sectionId) {
+      ['search-section', 'admin-section', 'teacher-section', 'editor-section'].forEach(id => {
+        document.getElementById(id).classList.add('hidden');
+      });
+      document.getElementById(sectionId).classList.remove('hidden');
+    }
+
+    function openLoginModal() {
+      document.getElementById('login-modal').classList.remove('hidden');
+      document.getElementById('login-modal').classList.add('flex');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('login-modal').classList.add('hidden');
+      document.getElementById('login-modal').classList.remove('flex');
+    }
+
+    async function handleLogin(e) {
+      e.preventDefault();
+      const u = document.getElementById('login-user').value.trim();
+      const p = document.getElementById('login-pass').value.trim();
+
+      Swal.fire({ title: 'กำลังตรวจสอบข้อมูล...', didOpen: () => Swal.showLoading() });
+
+      const res = await callGAS('login', { username: u, password: p });
+      Swal.close();
+
+      if (res.status === 'success') {
+        currentUser = res;
+        closeLoginModal();
+        updateNavForUser();
+        if (res.role === 'ADMIN') {
+          loadAdminData();
+          showSection('admin-section');
+        } else {
+          loadTeacherActivities();
+          showSection('teacher-section');
+        }
+      } else {
+        Swal.fire('เข้าสู่ระบบไม่สำเร็จ', res.message || 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง', 'error');
+      }
+    }
+
+    function updateNavForUser() {
+      const actions = document.getElementById('nav-actions');
+      const isAdmin = currentUser && currentUser.role === 'ADMIN';
+
+      actions.innerHTML = `
+        ${isAdmin ? `
+          <button onclick="openApiConfigModal()" class="hidden md:flex bg-indigo-950/90 hover:bg-indigo-900 text-indigo-200 border border-indigo-700/60 hover:border-indigo-500 px-3 py-1.5 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-plug text-amber-400"></i>
+            <span>ตั้งค่า API</span>
+          </button>
+          <button onclick="openGasCodeModal()" class="hidden md:flex bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-slate-700 hover:border-emerald-500/50 px-3 py-1.5 rounded-xl text-xs font-semibold transition items-center gap-1.5 shadow-sm">
+            <i class="fa-solid fa-code text-emerald-400"></i>
+            <span>โค้ด Code.gs</span>
+          </button>
+        ` : ''}
+        <span class="text-xs font-semibold bg-indigo-950/90 text-indigo-200 px-3.5 py-1.5 rounded-xl border border-indigo-700/60 flex items-center gap-2 shadow-sm">
+          <i class="fa-solid fa-user-shield ${isAdmin ? 'text-amber-400' : 'text-emerald-400'}"></i>
+          <span>${currentUser.user.Name || currentUser.user.Username}</span>
+          <span class="text-[10px] px-1.5 py-0.5 rounded-md ${isAdmin ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30' : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'}">${currentUser.role}</span>
+        </span>
+        <button onclick="logout()" class="bg-rose-600/90 hover:bg-rose-500 text-white px-3.5 py-1.5 rounded-xl text-xs font-semibold transition shadow-md shadow-rose-900/20 active:scale-95 flex items-center gap-1.5">
+          <i class="fa-solid fa-right-from-bracket text-xs"></i>
+          <span class="hidden sm:inline">ออกจากระบบ</span>
+        </button>
+      `;
+      checkApiConfigStatus();
+    }
+
+    function logout() {
+      currentUser = null;
+      location.reload();
+    }
+
+    async function loadAdminData() {
+      Swal.fire({ title: 'กำลังโหลดข้อมูล Admin...', didOpen: () => Swal.showLoading() });
+      const data = await callGAS('getAdminMasterData');
+      Swal.close();
+
+      if(!data || !data.logos) return;
+
+      document.getElementById('logo-list').innerHTML = data.logos.length === 0 ? '<p class="text-xs text-slate-400">ยังไม่มีโลโก้</p>' : data.logos.map(l => `
+        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+          <div class="flex items-center gap-2">
+            <img src="${l.Url}" class="w-7 h-7 object-contain bg-white rounded border p-0.5" alt="Logo">
+            <div>
+              <div class="font-bold text-slate-800">${l.Name}</div>
+              <div class="text-[10px] text-slate-400">${l.OrgName}</div>
+            </div>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${l.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${l.Status}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('sig-list').innerHTML = data.signatures.length === 0 ? '<p class="text-xs text-slate-400">ยังไม่มีลายเซ็น</p>' : data.signatures.map(s => `
+        <div class="flex justify-between items-center p-2 bg-slate-50 rounded-xl border border-slate-200/80 text-xs">
+          <div class="flex items-center gap-2">
+            <img src="${s.Url}" class="w-9 h-6 object-contain bg-white rounded border p-0.5" alt="Sig">
+            <div>
+              <div class="font-bold text-slate-800">${s.Name}</div>
+              <div class="text-[10px] text-slate-400">${s.Position}</div>
+            </div>
+          </div>
+          <span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${s.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${s.Status}</span>
+        </div>
+      `).join('');
+
+      document.getElementById('teacher-table-body').innerHTML = data.teachers.length === 0 ? '<tr><td colspan="4" class="p-4 text-center text-slate-400">ยังไม่มีข้อมูลครู</td></tr>' : data.teachers.map(t => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3 font-mono text-slate-700">${t.Username}</td>
+          <td class="p-3 font-medium text-slate-800">${t.Name}</td>
+          <td class="p-3"><span class="text-[10px] px-2 py-0.5 rounded-md font-semibold ${t.Status === 'Active' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}">${t.Status}</span></td>
+          <td class="p-3 text-center">
+            <button onclick="deleteTeacher('${t.ID}')" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    async function handleSaveLogo(e) {
+      e.preventDefault();
+      const payload = {
+        Name: document.getElementById('logo-name').value,
+        Url: document.getElementById('logo-url').value,
+        OrgName: document.getElementById('logo-org').value,
+        Status: 'Active'
+      };
+      Swal.fire({ title: 'กำลังบันทึกโลโก้...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('saveLogo', payload);
+      Swal.close();
+
+      if(res.status === 'success') {
+        Swal.fire('สำเร็จ', res.message, 'success');
+        document.getElementById('logo-form').reset();
+        loadAdminData();
+      } else {
+        Swal.fire('แจ้งเตือน', res.message, 'warning');
+      }
+    }
+
+    async function handleSaveSig(e) {
+      e.preventDefault();
+      const payload = {
+        Name: document.getElementById('sig-name').value,
+        Url: document.getElementById('sig-url').value,
+        Position: document.getElementById('sig-pos').value,
+        Status: 'Active'
+      };
+      Swal.fire({ title: 'กำลังบันทึกลายเซ็น...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('saveSignature', payload);
+      Swal.close();
+
+      Swal.fire('สำเร็จ', res.message, 'success');
+      document.getElementById('sig-form').reset();
+      loadAdminData();
+    }
+
+    async function handleSaveTeacher(e) {
+      e.preventDefault();
+      const payload = {
+        Username: document.getElementById('tch-user').value,
+        Password: document.getElementById('tch-pass').value,
+        Name: document.getElementById('tch-name').value,
+        Status: 'Active'
+      };
+      Swal.fire({ title: 'กำลังบันทึกข้อมูลครู...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('saveTeacher', payload);
+      Swal.close();
+
+      Swal.fire('สำเร็จ', res.message, 'success');
+      document.getElementById('teacher-form').reset();
+      loadAdminData();
+    }
+
+    function deleteTeacher(id) {
+      Swal.fire({
+        title: 'ยืนยันการลบบัญชีครู?',
+        text: 'การลบจะไม่สามารถย้อนกลับได้',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'ยืนยันการลบ'
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          await callGAS('deleteTeacher', { id: id });
+          loadAdminData();
+        }
+      });
+    }
+
+    async function loadTeacherActivities() {
+      Swal.fire({ title: 'กำลังโหลดกิจกรรม...', didOpen: () => Swal.showLoading() });
+      const list = await callGAS('getActivities', { teacherId: currentUser.user.ID });
+      Swal.close();
+
+      const grid = document.getElementById('activity-grid');
+      if (!list || list.length === 0) {
+        grid.innerHTML = '<div class="col-span-full text-center py-12 text-slate-400 bg-white rounded-2xl border border-dashed border-slate-300"><i class="fa-solid fa-folder-open text-3xl mb-2"></i><p>ยังไม่มีกิจกรรม กดปุ่ม "สร้างกิจกรรมใหม่" เพื่อเริ่มต้น</p></div>';
+        return;
+      }
+
+      grid.innerHTML = list.map(a => `
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200/80 flex flex-col justify-between hover:shadow-md transition">
+          <div>
+            <div class="flex items-start justify-between gap-2 mb-2">
+              <h4 class="font-bold text-base text-slate-900 font-prompt leading-snug">${a.Title}</h4>
+              <span class="text-[10px] bg-indigo-50 text-indigo-700 font-semibold px-2 py-0.5 rounded-full border border-indigo-100">ID: ${a.ID.slice(-4)}</span>
+            </div>
+            <p class="text-[11px] text-slate-400 mb-4"><i class="fa-regular fa-calendar-alt mr-1"></i> สร้างเมื่อ: ${new Date(a.CreatedAt).toLocaleDateString('th-TH')}</p>
+          </div>
+          <div class="flex gap-2 border-t pt-3 border-slate-100">
+            <button onclick="openCanvasEditor('${a.ID}', '${a.Title}')" class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded-xl text-xs font-medium transition flex items-center justify-center gap-1 shadow-sm">
+              <i class="fa-solid fa-pen-to-square"></i> ออกแบบเกียรติบัตร
+            </button>
+            <button onclick="deleteActivity('${a.ID}')" class="bg-rose-50 hover:bg-rose-100 text-rose-600 px-3 py-2 rounded-xl text-xs transition border border-rose-100" title="ลบกิจกรรม">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function openCreateActivityModal() {
+      Swal.fire({
+        title: 'สร้างกิจกรรมออกเกียรติบัตร',
+        input: 'text',
+        inputPlaceholder: 'กรอกชื่อกิจกรรม (เช่น การแข่งขันทักษะวิชาการ 2569)',
+        showCancelButton: true,
+        confirmButtonText: 'สร้างกิจกรรม',
+        confirmButtonColor: '#4f46e5'
+      }).then(async res => {
+        if (res.isConfirmed && res.value) {
+          Swal.fire({ title: 'กำลังสร้างกิจกรรม...', didOpen: () => Swal.showLoading() });
+          await callGAS('saveActivity', { teacherId: currentUser.user.ID, title: res.value });
+          loadTeacherActivities();
+        }
+      });
+    }
+
+    function deleteActivity(actId) {
+      Swal.fire({
+        title: 'ยืนยันการลบกิจกรรม?',
+        text: 'ข้อมูลรายชื่อนักเรียนและแบบเกียรติบัตรของกิจกรรมนี้จะถูกลบทั้งหมด',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#ef4444',
+        confirmButtonText: 'ยืนยันลบกิจกรรม'
+      }).then(async res => {
+        if (res.isConfirmed) {
+          Swal.fire({ title: 'กำลังลบกิจกรรม...', didOpen: () => Swal.showLoading() });
+          await callGAS('deleteActivity', { actId: actId });
+          loadTeacherActivities();
+        }
+      });
+    }
+
+    async function openCanvasEditor(actId, title) {
+      currentActivityId = actId;
+      document.getElementById('current-act-title').innerText = title;
+
+      Swal.fire({ title: 'กำลังโหลดแบบเกียรติบัตร...', didOpen: () => Swal.showLoading() });
+      const data = await callGAS('getActivityDetail', { actId: actId });
+      Swal.close();
+
+      activeLogosList = data.activeLogos || [];
+      activeSigsList = data.activeSignatures || [];
+
+      document.getElementById('select-logo').innerHTML = '<option value="">-- เลือกโลโก้ --</option>' + activeLogosList.map(l => `<option value="${l.Url}">${l.Name}</option>`).join('');
+      document.getElementById('select-sig').innerHTML = '<option value="">-- เลือกลายเซ็น --</option>' + activeSigsList.map(s => `<option value="${s.Url}">${s.Name} (${s.Position})</option>`).join('');
+
+      fabricCanvas.clear();
+      fabricCanvas.setBackgroundColor('#ffffff', fabricCanvas.renderAll.bind(fabricCanvas));
+
+      if (data.activity && data.activity.ConfigJSON && data.activity.ConfigJSON !== '{}') {
+        try {
+          const config = typeof data.activity.ConfigJSON === 'string' ? JSON.parse(data.activity.ConfigJSON) : data.activity.ConfigJSON;
+          fabricCanvas.loadFromJSON(config, fabricCanvas.renderAll.bind(fabricCanvas));
+        } catch (e) {
+          console.error("Canvas config parse error:", e);
+        }
+      }
+
+      showSection('editor-section');
+    }
+
+    function uploadCanvasBg(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(f) {
+        fabric.Image.fromURL(f.target.result, function(img) {
+          img.set({
+            scaleX: fabricCanvas.width / img.width,
+            scaleY: fabricCanvas.height / img.height
+          });
+          fabricCanvas.setBackgroundImage(img, fabricCanvas.renderAll.bind(fabricCanvas));
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function addLogoToCanvas() {
+      const url = document.getElementById('select-logo').value;
+      if (!url) return;
+      fabric.Image.fromURL(url, function(img) {
+        img.scaleToWidth(100);
+        fabricCanvas.add(img);
+        fabricCanvas.centerObject(img);
+        fabricCanvas.renderAll();
+      }, { crossOrigin: 'anonymous' });
+    }
+
+    function addSigToCanvas() {
+      const url = document.getElementById('select-sig').value;
+      if (!url) return;
+      fabric.Image.fromURL(url, function(img) {
+        img.scaleToWidth(120);
+        fabricCanvas.add(img);
+        fabricCanvas.centerObject(img);
+        fabricCanvas.renderAll();
+      }, { crossOrigin: 'anonymous' });
+    }
+
     function addTextVariable(textVar) {
       const text = new fabric.IText(textVar, {
-        left: 300,
+        left: 280,
         top: 250,
         fontFamily: 'Sarabun',
         fontSize: 26,
-        fill: '#1e293b',
-        fontWeight: 'bold'
+        fill: '#1e293b'
       });
       fabricCanvas.add(text);
       fabricCanvas.setActiveObject(text);
       fabricCanvas.renderAll();
     }
 
-    // ฟังก์ชันเพิ่มข้อความทั่วไปอิสระลงบน Canvas
-    function addCustomText() {
-      Swal.fire({
-        title: 'กรอกข้อความที่ต้องการเพิ่ม',
-        input: 'text',
-        inputValue: 'พิมพ์ข้อความที่นี่...',
-        showCancelButton: true,
-        confirmButtonText: 'ตกลง',
-        cancelButtonText: 'ยกเลิก'
-      }).then((result) => {
-        if (result.isConfirmed && result.value.trim() !== '') {
-          const text = new fabric.IText(result.value.trim(), {
-            left: 300,
-            top: 200,
-            fontFamily: 'Sarabun',
-            fontSize: 24,
-            fill: '#1e293b'
-          });
-          fabricCanvas.add(text);
-          fabricCanvas.setActiveObject(text);
-          fabricCanvas.renderAll();
-        }
-      });
-    }
-
-    // ฟังก์ชันปรับแต่งวัตถุที่เลือก
-    function updateSelectedText(key, value) {
+    function changeFontFamily(val) {
       const activeObj = fabricCanvas.getActiveObject();
-      if (activeObj && activeObj.isType('i-text')) {
-        activeObj.set(key, value);
+      if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'text')) {
+        activeObj.set('fontFamily', val);
         fabricCanvas.renderAll();
       }
     }
 
-    // สลับตัวหนา/ตัวเอียง
-    function toggleTextStyle(style) {
+    function changeFontSize(val) {
       const activeObj = fabricCanvas.getActiveObject();
-      if (activeObj && activeObj.isType('i-text')) {
-        if(style === 'bold') {
-          activeObj.set('fontWeight', activeObj.fontWeight === 'bold' ? 'normal' : 'bold');
-        } else if(style === 'italic') {
-          activeObj.set('fontStyle', activeObj.fontStyle === 'italic' ? 'normal' : 'italic');
-        }
+      if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'text')) {
+        activeObj.set('fontSize', parseInt(val) || 20);
         fabricCanvas.renderAll();
       }
     }
 
-    // ลบวัตถุที่เลือก
+    function changeTextColor(val) {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj) {
+        activeObj.set('fill', val);
+        fabricCanvas.renderAll();
+      }
+    }
+
+    function toggleBold() {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'text')) {
+        activeObj.set('fontWeight', activeObj.fontWeight === 'bold' ? 'normal' : 'bold');
+        fabricCanvas.renderAll();
+      }
+    }
+
+    function toggleItalic() {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'text')) {
+        activeObj.set('fontStyle', activeObj.fontStyle === 'italic' ? 'normal' : 'italic');
+        fabricCanvas.renderAll();
+      }
+    }
+
+    function setTextAlign(align) {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj && (activeObj.type === 'i-text' || activeObj.type === 'text')) {
+        activeObj.set('textAlign', align);
+        fabricCanvas.renderAll();
+      }
+    }
+
+    function bringForward() {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj) {
+        fabricCanvas.bringForward(activeObj);
+        fabricCanvas.renderAll();
+      }
+    }
+
+    function sendBackward() {
+      const activeObj = fabricCanvas.getActiveObject();
+      if (activeObj) {
+        fabricCanvas.sendBackwards(activeObj);
+        fabricCanvas.renderAll();
+      }
+    }
+
     function deleteActiveObject() {
       const activeObj = fabricCanvas.getActiveObject();
       if (activeObj) {
         fabricCanvas.remove(activeObj);
-        fabricCanvas.discardActiveObject();
         fabricCanvas.renderAll();
       }
     }
 
-    // บันทึกแม่แบบ Canvas
-    function saveCanvasTemplate() {
-      const json = JSON.stringify(fabricCanvas);
-      Swal.fire('บันทึกสำเร็จ!', 'แม่แบบเกียรติบัตรถูกบันทึกเรียบร้อยแล้ว', 'success');
+    async function saveCanvasDesign() {
+      const json = fabricCanvas.toJSON();
+      Swal.fire({ title: 'กำลังบันทึกรูปแบบ...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('saveCanvasConfig', { actId: currentActivityId, configJSON: json });
+      Swal.close();
+
+      if (res.status === 'success') {
+        Swal.fire('สำเร็จ', 'บันทึกรูปแบบเกียรติบัตรเรียบร้อยแล้ว', 'success');
+      } else {
+        Swal.fire('ผิดพลาด', res.message, 'error');
+      }
+    }
+
+    function openManageStudentsModal() {
+      document.getElementById('student-modal').classList.remove('hidden');
+      document.getElementById('student-modal').classList.add('flex');
+      document.getElementById('student-input-body').innerHTML = '';
+      addSingleStudentRow();
+    }
+
+    function closeStudentModal() {
+      document.getElementById('student-modal').classList.add('hidden');
+      document.getElementById('student-modal').classList.remove('flex');
+    }
+
+    function addSingleStudentRow(name = '', score = '') {
+      const tbody = document.getElementById('student-input-body');
+      const tr = document.createElement('tr');
+      tr.className = "hover:bg-slate-50 border-b border-slate-100";
+      tr.innerHTML = `
+        <td class="p-2"><input type="text" value="${name}" class="st-name w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs" placeholder="ชื่อ-นามสกุล"></td>
+        <td class="p-2"><input type="number" value="${score}" class="st-score w-full p-2 bg-slate-50 border border-slate-200 rounded-lg text-xs" placeholder="คะแนน"></td>
+        <td class="p-2 text-center"><button onclick="this.closest('tr').remove()" class="text-rose-500 hover:text-rose-700 p-1"><i class="fa-solid fa-trash"></i></button></td>
+      `;
+      tbody.appendChild(tr);
+    }
+
+    function downloadExcelTemplate() {
+      const ws = XLSX.utils.json_to_sheet([
+        { "ชื่อ-นามสกุล": "นายสมชาย ใจดี", "คะแนน": 85 },
+        { "ชื่อ-นามสกุล": "นางสาวสมหญิง รักเรียน", "คะแนน": 72 },
+        { "ชื่อ-นามสกุล": "เด็กชายกิตติศักดิ์ มีสุข", "คะแนน": 64 }
+      ]);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "รายชื่อผู้รับเกียรติบัตร");
+      XLSX.writeFile(wb, "Certificate_Template.xlsx");
+    }
+
+    function handleExcelImport(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = new Uint8Array(evt.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const sheetName = workbook.SheetNames[0];
+          const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName]);
+
+          const tbody = document.getElementById('student-input-body');
+          tbody.innerHTML = '';
+          rows.forEach(r => {
+            const name = r["ชื่อ-นามสกุล"] || r["ชื่อ"] || r["Name"] || "";
+            const score = r["คะแนน"] || r["Score"] || 0;
+            if (name) addSingleStudentRow(name, score);
+          });
+          Swal.fire('นำเข้า成功', `นำเข้ารายชื่อเรียบร้อยแล้วจำนวน ${rows.length} รายการ`, 'success');
+        } catch (err) {
+          Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถอ่านไฟล์ Excel ได้', 'error');
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    }
+
+    async function saveStudentList() {
+      const names = document.querySelectorAll('.st-name');
+      const scores = document.querySelectorAll('.st-score');
+      let list = [];
+
+      names.forEach((el, i) => {
+        if (el.value.trim() !== '') {
+          list.push({ Name: el.value.trim(), Score: scores[i].value || 0 });
+        }
+      });
+
+      if (list.length === 0) {
+        Swal.fire('แจ้งเตือน', 'กรุณากรอกข้อมูลอย่างน้อย 1 รายชื่อ', 'warning');
+        return;
+      }
+
+      Swal.fire({ title: 'กำลังบันทึกรายชื่อนักเรียน...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('importStudents', { actId: currentActivityId, studentList: list });
+      Swal.close();
+
+      if (res.status === 'success') {
+        Swal.fire('สำเร็จ', res.message, 'success');
+        closeStudentModal();
+      } else {
+        Swal.fire('ผิดพลาด', res.message, 'error');
+      }
+    }
+
+    async function searchCertificates() {
+      const query = document.getElementById('search-input').value.trim();
+      if (!query) {
+        Swal.fire('แจ้งเตือน', 'กรุณากรอกชื่อ-นามสกุลที่ต้องการค้นหา', 'info');
+        return;
+      }
+
+      Swal.fire({ title: 'กำลังค้นหาเกียรติบัตร...', didOpen: () => Swal.showLoading() });
+      const results = await callGAS('searchCertificates', { queryName: query });
+      Swal.close();
+
+      const container = document.getElementById('search-results');
+      container.innerHTML = '';
+
+      if (!results || results.length === 0) {
+        container.innerHTML = `
+          <div class="bg-white p-12 rounded-3xl text-center border border-slate-200/80">
+            <i class="fa-solid fa-folder-open text-4xl text-slate-300 mb-3"></i>
+            <h3 class="text-lg font-bold text-slate-700 font-prompt">ไม่พบข้อมูลเกียรติบัตร</h3>
+            <p class="text-xs text-slate-400 mt-1">โปรดตรวจสอบชื่อ-นามสกุลให้ถูกต้องอีกครั้ง</p>
+          </div>
+        `;
+        return;
+      }
+
+      results.forEach((item, index) => {
+        const cardId = `render-canvas-${index}`;
+        const card = document.createElement('div');
+        card.className = "bg-white p-6 rounded-3xl shadow-sm border border-slate-200/80 flex flex-col items-center gap-5 transition hover:shadow-md";
+        card.innerHTML = `
+          <div class="text-center">
+            <span class="text-xs font-semibold text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full border border-indigo-100 block w-max mx-auto mb-1">
+              ${item.activityTitle}
+            </span>
+            <h3 class="font-bold text-xl text-slate-900 font-prompt">${item.student.Name}</h3>
+            <p class="text-xs text-slate-400">เลขที่: <span class="font-mono text-slate-600">${item.student.CertNo}</span> | ผลงาน: <span class="text-amber-600 font-medium">${item.student.Medal}</span></p>
+          </div>
+
+          <div class="canvas-wrapper max-w-full overflow-auto">
+            <canvas id="${cardId}" width="800" height="565"></canvas>
+          </div>
+
+          <div class="flex flex-wrap gap-3 justify-center">
+            <button onclick="downloadCertImage('${cardId}', '${item.student.Name}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-5 py-2.5 rounded-xl text-xs font-medium transition shadow-md flex items-center gap-1.5">
+              <i class="fa-solid fa-file-image"></i> ดาวน์โหลดรูปภาพ (PNG)
+            </button>
+            <button onclick="downloadCertPDF('${cardId}', '${item.student.Name}')" class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl text-xs font-medium transition shadow-md flex items-center gap-1.5">
+              <i class="fa-solid fa-file-pdf text-amber-300"></i> ดาวน์โหลดไฟล์เอกสาร (PDF)
+            </button>
+          </div>
+        `;
+        container.appendChild(card);
+        renderStudentCertificate(cardId, item.config, item.student);
+      });
+    }
+
+    function renderStudentCertificate(canvasId, config, student) {
+      if (!config) return;
+
+      const c = new fabric.StaticCanvas(canvasId, { width: 800, height: 565 });
+      c.loadFromJSON(config, function() {
+        c.getObjects().forEach(obj => {
+          if (obj.type === 'i-text' || obj.type === 'text') {
+            let text = obj.text || '';
+            text = text.replace('{ชื่อ-สกุลผู้รับเกียรติบัตร}', student.Name);
+            text = text.replace('{เหรียญ}', student.Medal);
+            text = text.replace('{ลำดับ}', student.Rank);
+            text = text.replace('{เลขที่}', student.CertNo);
+            obj.set('text', text);
+          }
+        });
+
+        // Add QR Code Verification URL
+        const qrContainer = document.createElement('div');
+        const currentUrl = window.location.href.split('?')[0];
+        const verifyUrl = `${currentUrl}?idref=${student.CertNo}`;
+
+        new QRCode(qrContainer, { text: verifyUrl, width: 75, height: 75 });
+
+        setTimeout(() => {
+          const qrImg = qrContainer.querySelector('img');
+          if (qrImg) {
+            fabric.Image.fromURL(qrImg.src, function(img) {
+              img.set({ left: 695, top: 460 });
+              c.add(img);
+              c.renderAll();
+            });
+          } else {
+            c.renderAll();
+          }
+        }, 300);
+      });
+    }
+
+    function downloadCertImage(canvasId, studentName) {
+      const canvasEl = document.getElementById(canvasId);
+      const link = document.createElement('a');
+      link.download = `เกียรติบัตร_${studentName}.png`;
+      link.href = canvasEl.toDataURL('image/png');
+      link.click();
+    }
+
+    function downloadCertPDF(canvasId, studentName) {
+      const canvasEl = document.getElementById(canvasId);
+      const imgData = canvasEl.toDataURL('image/png');
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF('landscape', 'mm', 'a4');
+      pdf.addImage(imgData, 'PNG', 0, 0, 297, 210);
+      pdf.save(`เกียรติบัตร_${studentName}.pdf`);
+    }
+
+    async function checkUrlParams() {
+      const params = new URLSearchParams(window.location.search);
+      const idref = params.get('idref');
+      if (idref) {
+        Swal.fire({ title: 'กำลังตรวจสอบเกียรติบัตร...', didOpen: () => Swal.showLoading() });
+        const res = await callGAS('verifyCertificate', { refId: idref });
+        Swal.close();
+
+        if (res && res.valid) {
+          Swal.fire({
+            icon: 'success',
+            title: 'เกียรติบัตรฉบับจริงในระบบ',
+            html: `
+              <div class="text-left text-xs space-y-2 mt-4 bg-slate-50 p-4 rounded-xl border border-slate-200">
+                <p><strong>ผู้ได้รับเกียรติบัตร:</strong> ${res.student.Name}</p>
+                <p><strong>ชื่อกิจกรรม:</strong> ${res.activityTitle}</p>
+                <p><strong>เลขที่เกียรติบัตร:</strong> ${res.student.CertNo}</p>
+                <p><strong>ผลการเข้าร่วม/รางวัล:</strong> <span class="text-emerald-600 font-bold">${res.student.Medal}</span></p>
+                <p><strong>ลำดับที่:</strong> ${res.student.Rank}</p>
+              </div>
+            `,
+            confirmButtonText: 'ตกลง'
+          });
+        } else {
+          Swal.fire('ไม่พบเกียรติบัตร', 'รหัสเกียรติบัตรไม่ถูกต้อง หรือไม่มีอยู่ในระบบข้อมูล', 'error');
+        }
+      }
+    }
+
+    function openGasCodeModal() {
+      document.getElementById('gas-code-modal').classList.remove('hidden');
+      document.getElementById('gas-code-modal').classList.add('flex');
+    }
+
+    function closeGasCodeModal() {
+      document.getElementById('gas-code-modal').classList.add('hidden');
+      document.getElementById('gas-code-modal').classList.remove('flex');
+    }
+
+    function loadGasCodePreview() {
+      const gasSourceCode = `/**
+ * ระบบสร้างเกียรติบัตรออนไลน์ (Certificate System - Enhanced & Bugfree)
+ * พัฒนาสำหรับ Google Apps Script (GAS) Backend
+ */
+
+function doPost(e) {
+  try {
+    const data = JSON.parse(e.postData.contents);
+    const action = data.action;
+    const payload = data.payload || {};
+    let result = {};
+
+    switch (action) {
+      case 'login':
+        result = login(payload.username, payload.password);
+        break;
+      case 'getAdminMasterData':
+        result = getAdminMasterData();
+        break;
+      case 'saveLogo':
+        result = saveLogo(payload);
+        break;
+      case 'saveSignature':
+        result = saveSignature(payload);
+        break;
+      case 'saveTeacher':
+        result = saveTeacher(payload);
+        break;
+      case 'deleteTeacher':
+        result = deleteTeacher(payload.id);
+        break;
+      case 'getActivities':
+        result = getActivities(payload.teacherId);
+        break;
+      case 'saveActivity':
+        result = saveActivity(payload.teacherId, payload.title);
+        break;
+      case 'deleteActivity':
+        result = deleteActivity(payload.actId);
+        break;
+      case 'saveCanvasConfig':
+        result = saveCanvasConfig(payload.actId, payload.configJSON);
+        break;
+      case 'getActivityDetail':
+        result = getActivityDetail(payload.actId);
+        break;
+      case 'importStudents':
+        result = importStudents(payload.actId, payload.studentList);
+        break;
+      case 'searchCertificates':
+        result = searchCertificates(payload.queryName);
+        break;
+      case 'verifyCertificate':
+        result = verifyCertificate(payload.refId);
+        break;
+      default:
+        result = { status: 'error', message: 'Action not found' };
+    }
+
+    return ContentService.createTextOutput(JSON.stringify(result))
+      .setMimeType(ContentService.MimeType.JSON);
+
+  } catch (err) {
+    return ContentService.createTextOutput(JSON.stringify({ status: 'error', message: err.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+}
+
+// รวม doGet ให้เป็นฟังก์ชันเดียว รองรับทั้ง API Parameters และ HTML Web App
+function doGet(e) {
+  if (e && e.parameter && e.parameter.action === 'verify') {
+    const res = verifyCertificate(e.parameter.refId);
+    return ContentService.createTextOutput(JSON.stringify(res))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+ 
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('ระบบเกียรติบัตรออนไลน์')
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// 1. INITIALIZE DATABASE SHEETS
+function initDatabase() {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheets = [
+    { name: 'Admins', headers: ['ID', 'Username', 'Password', 'Role'] },
+    { name: 'Teachers', headers: ['ID', 'Username', 'Password', 'Name', 'Status'] },
+    { name: 'Logos', headers: ['ID', 'Name', 'Url', 'OrgName', 'Status'] },
+    { name: 'Signatures', headers: ['ID', 'Name', 'Url', 'Position', 'Status'] },
+    { name: 'Templates', headers: ['ID', 'Name', 'BgUrl'] },
+    { name: 'Activities', headers: ['ID', 'TeacherID', 'Title', 'ConfigJSON', 'CreatedAt'] },
+    { name: 'Students', headers: ['ID', 'ActivityID', 'CertNo', 'Name', 'Score', 'Medal', 'Rank'] }
+  ];
+
+  sheets.forEach(sh => {
+    let sheet = ss.getSheetByName(sh.name);
+    if (!sheet) {
+      sheet = ss.insertSheet(sh.name);
+      sheet.appendRow(sh.headers);
+      sheet.getRange(1, 1, 1, sh.headers.length).setFontWeight('bold');
+    }
+  });
+
+  const adminSheet = ss.getSheetByName('Admins');
+  if (adminSheet.getLastRow() === 1) {
+    adminSheet.appendRow(['ADM001', 'admin', '123456', 'ADMIN']);
+  }
+
+  return 'ตั้งค่าฐานข้อมูลเริ่มต้นเรียบร้อยแล้ว!';
+}
+
+function getSheetData(sheetName) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  if (!sheet) return [];
+  const rows = sheet.getDataRange().getValues();
+  if (rows.length <= 1) return [];
+ 
+  const headers = rows[0];
+  return rows.slice(1).map(row => {
+    let obj = {};
+    headers.forEach((h, i) => obj[h] = row[i]);
+    return obj;
+  });
+}
+
+function appendToSheet(sheetName, rowArray) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(sheetName);
+  sheet.appendRow(rowArray);
+}
+
+// 2. AUTHENTICATION
+function login(username, password) {
+  const admins = getSheetData('Admins');
+  const adminMatch = admins.find(a => String(a.Username).trim() === String(username).trim() && String(a.Password).trim() === String(password).trim());
+  if (adminMatch) {
+    return { status: 'success', role: 'ADMIN', user: adminMatch };
+  }
+
+  const teachers = getSheetData('Teachers');
+  const teacherMatch = teachers.find(t => String(t.Username).trim() === String(username).trim() && String(t.Password).trim() === String(password).trim());
+  if (teacherMatch) {
+    if (teacherMatch.Status === 'Inactive') {
+      return { status: 'error', message: 'บัญชีนี้ถูกปิดใช้งาน' };
+    }
+    return { status: 'success', role: 'TEACHER', user: teacherMatch };
+  }
+
+  return { status: 'error', message: 'ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง' };
+}
+
+// 3. ADMIN MANAGEMENT
+function getAdminMasterData() {
+  return {
+    logos: getSheetData('Logos'),
+    signatures: getSheetData('Signatures'),
+    templates: getSheetData('Templates'),
+    teachers: getSheetData('Teachers')
+  };
+}
+
+function saveLogo(data) {
+  const logos = getSheetData('Logos');
+  if (logos.length >= 5 && !data.id) {
+    return { status: 'error', message: 'สามารถเพิ่มโลโก้ได้สูงสุด 5 โลโก้เท่านั้น' };
+  }
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Logos');
+  const newId = data.id || 'LOGO_' + Date.now();
+ 
+  if (data.id) {
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][0] === data.id) {
+        sheet.getRange(i + 1, 2, 1, 4).setValues([[data.Name, data.Url, data.OrgName, data.Status]]);
+        break;
+      }
+    }
+  } else {
+    sheet.appendRow([newId, data.Name, data.Url, data.OrgName, data.Status || 'Active']);
+  }
+  return { status: 'success', message: 'บันทึกโลโก้สำเร็จ' };
+}
+
+function saveSignature(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Signatures');
+  const newId = data.id || 'SIG_' + Date.now();
+ 
+  if (data.id) {
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][0] === data.id) {
+        sheet.getRange(i + 1, 2, 1, 4).setValues([[data.Name, data.Url, data.Position, data.Status]]);
+        break;
+      }
+    }
+  } else {
+    sheet.appendRow([newId, data.Name, data.Url, data.Position, data.Status || 'Active']);
+  }
+  return { status: 'success', message: 'บันทึกลายเซ็นสำเร็จ' };
+}
+
+function saveTeacher(data) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Teachers');
+  if (data.id) {
+    const rows = sheet.getDataRange().getValues();
+    for (let i = 1; i < rows.length; i++) {
+      if (rows[i][0] === data.id) {
+        sheet.getRange(i + 1, 2, 1, 4).setValues([[data.Username, data.Password, data.Name, data.Status]]);
+        break;
+      }
+    }
+  } else {
+    sheet.appendRow(['TCH_' + Date.now(), data.Username, data.Password, data.Name, 'Active']);
+  }
+  return { status: 'success', message: 'จัดการข้อมูลครูสำเร็จ' };
+}
+
+function deleteTeacher(id) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Teachers');
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === id) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+  return { status: 'success', message: 'ลบข้อมูลครูสำเร็จ' };
+}
+
+// 4. TEACHER & ACTIVITIES
+function getActivities(teacherId) {
+  const acts = getSheetData('Activities');
+  return acts.filter(a => String(a.TeacherID) === String(teacherId));
+}
+
+function saveActivity(teacherId, title) {
+  const newId = 'ACT_' + Date.now();
+  appendToSheet('Activities', [newId, teacherId, title, '{}', new Date().toISOString()]);
+  return { status: 'success', id: newId };
+}
+
+function deleteActivity(actId) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet = ss.getSheetByName('Activities');
+  let rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === actId) {
+      sheet.deleteRow(i + 1);
+      break;
+    }
+  }
+ 
+  sheet = ss.getSheetByName('Students');
+  rows = sheet.getDataRange().getValues();
+  for (let i = rows.length - 1; i >= 1; i--) {
+    if (rows[i][1] === actId) {
+      sheet.deleteRow(i + 1);
+    }
+  }
+  return { status: 'success', message: 'ลบกิจกรรมสำเร็จ' };
+}
+
+function saveCanvasConfig(actId, configJSON) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Activities');
+  const rows = sheet.getDataRange().getValues();
+  const jsonString = (typeof configJSON === 'string') ? configJSON : JSON.stringify(configJSON);
+  
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === actId) {
+      sheet.getRange(i + 1, 4).setValue(jsonString);
+      break;
+    }
+  }
+  return { status: 'success', message: 'บันทึกรูปแบบเกียรติบัตรสำเร็จ' };
+}
+
+function getActivityDetail(actId) {
+  const acts = getSheetData('Activities');
+  const act = acts.find(a => a.ID === actId);
+  const students = getSheetData('Students').filter(s => s.ActivityID === actId);
+  const logos = getSheetData('Logos').filter(l => l.Status === 'Active');
+  const signatures = getSheetData('Signatures').filter(s => s.Status === 'Active');
+ 
+  return {
+    activity: act,
+    students: students,
+    activeLogos: logos,
+    activeSignatures: signatures
+  };
+}
+
+function importStudents(actId, studentList) {
+  const ss = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName('Students');
+  const sorted = [...studentList].sort((a, b) => Number(b.Score) - Number(a.Score));
+ 
+  let currentRank = 1;
+  sorted.forEach((item, index) => {
+    if (index > 0 && Number(item.Score) < Number(sorted[index - 1].Score)) {
+      currentRank = index + 1;
+    }
+    item.Rank = currentRank;
+  });
+
+  const timestamp = Date.now().toString().slice(-6);
+  sorted.forEach((st, idx) => {
+    const certNo = 'CERT-' + timestamp + '-' + String(idx + 1).padStart(3, '0');
+    let medal = 'เข้าร่วม';
+    const score = Number(st.Score) || 0;
+    if (score >= 80) medal = 'เหรียญทอง';
+    else if (score >= 70) medal = 'เหรียญเงิน';
+    else if (score >= 60) medal = 'เหรียญทองแดง';
+
+    sheet.appendRow([
+      'STU_' + Date.now() + '_' + idx,
+      actId,
+      certNo,
+      st.Name,
+      score,
+      medal,
+      st.Rank
+    ]);
+  });
+
+  return { status: 'success', message: 'นำเข้าข้อมูลนักเรียนสำเร็จ' };
+}
+
+// 5. PUBLIC SEARCH & VERIFY
+function searchCertificates(queryName) {
+  if (!queryName || String(queryName).trim() === '') return [];
+  const students = getSheetData('Students');
+  const activities = getSheetData('Activities');
+ 
+  const results = students.filter(s => String(s.Name).toLowerCase().includes(String(queryName).toLowerCase().trim()));
+ 
+  return results.map(st => {
+    const act = activities.find(a => a.ID === st.ActivityID);
+    let parsedConfig = null;
+    if (act && act.ConfigJSON) {
+      try { parsedConfig = (typeof act.ConfigJSON === 'string') ? JSON.parse(act.ConfigJSON) : act.ConfigJSON; } catch(e){}
+    }
+    return {
+      student: st,
+      activityTitle: act ? act.Title : '',
+      config: parsedConfig
+    };
+  });
+}
+
+function verifyCertificate(refId) {
+  const students = getSheetData('Students');
+  const activities = getSheetData('Activities');
+ 
+  const st = students.find(s => String(s.CertNo) === String(refId) || String(s.ID) === String(refId));
+  if (!st) return { valid: false };
+
+  const act = activities.find(a => a.ID === st.ActivityID);
+  let parsedConfig = null;
+  if (act && act.ConfigJSON) {
+    try { parsedConfig = (typeof act.ConfigJSON === 'string') ? JSON.parse(act.ConfigJSON) : act.ConfigJSON; } catch(e){}
+  }
+  return {
+    valid: true,
+    student: st,
+    activityTitle: act ? act.Title : '',
+    config: parsedConfig
+  };
+}`;
+
+      document.getElementById('gas-code-text').textContent = gasSourceCode;
+    }
+
+    function copyGasCode() {
+      const code = document.getElementById('gas-code-text').textContent;
+      navigator.clipboard.writeText(code).then(() => {
+        Swal.fire('คัดลอกเรียบร้อย', 'นำโค้ดนี้ไปวางแทนที่ในโปรเจกต์ Google Apps Script ของท่านได้ทันที', 'success');
+      });
     }
   </script>
 </body>
