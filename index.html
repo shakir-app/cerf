@@ -630,7 +630,7 @@
     function checkApiConfigStatus() {
       const banner = document.getElementById('api-warning-banner');
       if (!banner) return;
-      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('YOUR_DEPLOYMENT_ID');
+      const isUnconfigured = !GAS_URL || GAS_URL.trim() === '' || GAS_URL.includes('https://script.google.com/macros/s/AKfycbwApdqv_PGVNcPvQSrSQWF3gJxfjHCY4MolWf1efbAWthmWBGfn-bcnCF4cAoSM8onN/exec');
       
       if (isUnconfigured && currentUser && currentUser.role === 'ADMIN') {
         banner.classList.remove('hidden');
@@ -1160,11 +1160,40 @@
       }
     }
 
+    // ปรับปรุงฟังก์ชันเปิด Modal ให้โหลดข้อมูลเดิมอัตโนมัติ
     function openManageStudentsModal() {
       document.getElementById('student-modal').classList.remove('hidden');
       document.getElementById('student-modal').classList.add('flex');
       document.getElementById('student-input-body').innerHTML = '';
-      addSingleStudentRow();
+      
+      // ดึงข้อมูลเดิมมาแสดงทันทีเมื่อเปิด Modal
+      fetchExistingStudents();
+    }
+
+    // ฟังก์ชันดึงรายชื่อนักเรียนที่เคยบันทึกในกิจกรรมนี้
+    async function fetchExistingStudents() {
+      if (!currentActivityId) {
+        Swal.fire('เตือน', 'กรุณาเลือกกิจกรรมก่อน', 'warning');
+        return;
+      }
+
+      Swal.fire({ title: 'กำลังดึงข้อมูลรายชื่อ...', didOpen: () => Swal.showLoading() });
+      const res = await callGAS('getActivityDetail', { actId: currentActivityId });
+      Swal.close();
+
+      const tbody = document.getElementById('student-input-body');
+      tbody.innerHTML = '';
+
+      if (res && res.students && res.students.length > 0) {
+        res.students.forEach(st => {
+          addSingleStudentRow(st.Name, st.Score);
+        });
+        Swal.fire('สำเร็จ', `ดึงข้อมูลเรียบร้อยแล้ว (${res.students.length} รายการ)`, 'success');
+      } else {
+        // หากยังไม่มีข้อมูลเดิม ให้เพิ่มแถวเปล่า 1 แถว
+        addSingleStudentRow();
+        Swal.fire('แจ้งเตือน', 'ยังไม่มีข้อมูลนักเรียนที่บันทึกไว้ในกิจกรรมนี้', 'info');
+      }
     }
 
     function closeStudentModal() {
